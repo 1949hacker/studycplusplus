@@ -22,9 +22,9 @@ vector<int> bw_int, iops_int, bw, iops, values;
 void setConfig() {
   cout << "测试路径（完整输入，带/结尾，如/mnt/iotest/）：";
   cin >> dir;
-  cout << "测试文件大小，单位为G，size=";
+  cout << "测试文件大小，仅输入数字单位为G，size=";
   cin >> fsize;
-  cout << "运行时长（单位只能为秒），runtime=";
+  cout << "运行时长，仅输入数字单位为秒，runtime=";
   cin >> runtime;
   cout << "io测试引擎，ioengine=";
   cin >> ioengine;
@@ -130,7 +130,7 @@ void format() {
 void seq() {
 
   // 文件
-  cout << "顺序写和读测试，共计100项，每项" + runtime + "共计" +
+  cout << "顺序写和读测试，共计100项，每项" + runtime + "秒，共计" +
               to_string(stoi(runtime) * 50) + "秒，约" +
               to_string(stoi(runtime) * 50 / 60 / 60) + "小时\n进行中..."
        << endl;
@@ -152,20 +152,22 @@ void seq() {
           for (int iodepth : iodepth_group) {
             name = "seq_read_filename_numjobs=1_iodepth=" + to_string(iodepth) +
                    "_bs=" + to_string(bs) + "k";
-            // 构建fio命令
-            fio_cmd = "fio -name=" + name + " -size=" + fsize +
-                      " -runtime=" + runtime +
-                      "s -time_base -bs=" + to_string(bs) + "k" +
-                      +" -direct=" + direct +
-                      " -rw=write "
-                      "-ioengine=" +
-                      ioengine + " -numjobs=1" +
-                      " -group_reporting -iodepth=" + to_string(iodepth) +
-                      " -" + dorf + to_string(iodepth) + to_string(bs) + "k/" +
-                      +"/" + to_string(i) + " -randrepeat=0";
 
-            // break跳出用于检查fio命令生成是否正常
-            cout << fio_cmd << endl;
+            // 先写后读
+            string rw_group[] = {"write", "read"};
+            for (string rw : rw_group) {
+              // 构建fio命令
+              fio_cmd = "fio -name=" + name + " -size=" + fsize +
+                        "G -runtime=" + runtime +
+                        "s -time_base -bs=" + to_string(bs) + "k" +
+                        +" -direct=" + direct + " -rw=" + rw +
+                        "-ioengine=" + ioengine + " -numjobs=1" +
+                        " -group_reporting -iodepth=" + to_string(iodepth) +
+                        " -" + dorf + to_string(iodepth) + to_string(bs) +
+                        "k/" + +"/" + to_string(i) + " -randrepeat=0";
+
+              // break跳出用于检查fio命令生成是否正常
+              cout << fio_cmd << endl;
 
             // 重复运行4次并舍弃第一次运行结果
             /*
@@ -175,7 +177,7 @@ void seq() {
                 continue; // 跳过第一次结果分析}
               }
               format();
-            }*/
+            }*/}
           }
         }
       } else if (dorf.find("directory") != string::npos) {
@@ -190,19 +192,24 @@ void seq() {
               name = "seq_read_directory_numjobs=" + to_string(numjob) +
                      "_iodepth=" + to_string(iodepth) + "_bs=" + to_string(bs) +
                      "k";
-              // 构建fio命令
-              fio_cmd = "fio -name=" + name + " -size=" + fsize +
-                        " -runtime=" + runtime +
-                        "s -time_base -bs=1m -direct=" + direct +
-                        " -rw=write "
-                        "-ioengine=" +
-                        ioengine + " -numjobs=" + to_string(numjob) +
-                        " -group_reporting -iodepth=" + to_string(iodepth) +
-                        " -" + dorf + to_string(iodepth) + "/" + to_string(bs) +
-                        "k/" + to_string(i) + "/ -randrepeat=0";
 
-              // break跳出用于检查fio命令生成是否正常
-              cout << fio_cmd << endl;
+              // 先写后读
+              string rw_group[] = {"write", "read"};
+              for (string rw : rw_group) {
+                // 构建fio命令
+                fio_cmd = "fio -name=" + name + " -size=" + fsize +
+                          "G -runtime=" + runtime +
+                          "s -time_base -bs=1m -direct=" + direct +
+                          " -rw=write "
+                          "-ioengine=" +
+                          ioengine + " -numjobs=" + to_string(numjob) +
+                          " -group_reporting -iodepth=" + to_string(iodepth) +
+                          " -" + dorf + to_string(iodepth) + "/" +
+                          to_string(bs) + "k/" + to_string(i) +
+                          "/ -randrepeat=0";
+
+                // break跳出用于检查fio命令生成是否正常
+                cout << fio_cmd << endl;
 
               // 重复运行4次并舍弃第一次运行结果
               /*
@@ -212,7 +219,7 @@ void seq() {
                   continue; // 跳过第一次结果分析}
                 }
                 format();
-              }*/
+              }*/}
             }
           }
         }

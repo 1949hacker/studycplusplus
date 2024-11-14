@@ -14,10 +14,10 @@ int main() {
   rm_file();
 
   // 进行随机写测试
-  seqRead();
+  seq_write();
 
   // 删除临时文件
-  rm_file();
+  // rm_file();
 
   // 输出存储的数据，模拟 Excel 风格
   runReport();

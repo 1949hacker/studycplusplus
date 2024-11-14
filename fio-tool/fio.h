@@ -6,7 +6,7 @@
 void setConfig();
 
 // 顺序读
-void seqRead();
+void seq_write();
 
 // 删除测试文件
 void rm_file();

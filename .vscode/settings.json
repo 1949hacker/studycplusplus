@@ -7,6 +7,16 @@
         "iomanip": "cpp",
         "fstream": "cpp",
         "array": "cpp",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "system_error": "cpp",
+        "regex": "cpp",
+        "unordered_map": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "span": "cpp",
+        "format": "cpp",
+        "text_encoding": "cpp"
     }
 }

@@ -12,11 +12,13 @@
 using namespace std;
 
 // 全局参数
+int bwMin, bwMax, bwAvg, iopsMin, iopsMax, iopsAvg, bw[] = {0, 0, 0},
+                                                    iops[] = {0, 0, 0};
 string dir, fsize, ioengine, name, fio_cmd, runtime, direct, line;
 stringstream fio_output;
 vector<vector<string>> run_report;
-vector<string> bw_num, iops_num, row;
-vector<int> bw_int, iops_int, bw, iops, values;
+vector<string> row;
+vector<int> values, bw_int, iops_int;
 
 // 参数设置
 void setConfig() {
@@ -40,6 +42,10 @@ void rm_file() {
 }
 
 void run_cmd(const string &cmd) {
+  // 重置变量
+  fio_output.str("");
+  fio_output.clear();
+
   FILE *fp = popen(cmd.c_str(), "r");
   if (fp == nullptr) {
     cerr << "Error opening pipe!" << endl;
@@ -52,24 +58,33 @@ void run_cmd(const string &cmd) {
     fio_output << buffer;
   }
   fclose(fp);
+
+  // DEBUG:显示fio的输出内容
+  //   cout << fio_output.str();
 }
 
 // 分析fio输出
-void format() {
+void format(const int &i) {
+
+  vector<string> bw_num, iops_num;
+
   while (getline(fio_output, line)) {
-    if (line.find("bw") != string::npos) {
-      if (line.find("MiB/s") != string::npos) {
+    if (line.find("bw ") != string::npos) {
+      if (line.find("MiB") != string::npos) {
+        cout << "检测到单位MiB/s，将转换为KiB/s" << endl;
         // 提取带宽数字
         regex bw_regex(R"(\d+\.\d+|\d+)");
         smatch match;
         while (regex_search(line, match, bw_regex)) {
-          // 检测到单位是MiB，则转换为MiB
-          float bw_value_kib = stof(match.str()) * 1024;
+          // 检测到单位是MiB，则转换为KiB
+          float bw_value_kib = stof(match.str());
+          bw_value_kib *= 1024;
           int bw_value_bytes = static_cast<int>(bw_value_kib); // 转为整数
-          bw_num.push_back(match.str());
+          bw_num.push_back(to_string(bw_value_bytes));
           line = match.suffix();
         }
-      } else {
+      } else if (line.find("KiB") != string::npos) {
+        cout << "检测到单位KiB/s，直接提取" << endl;
         // 提取带宽数字
         regex bw_regex(R"(\d+\.\d+|\d+)");
         smatch match;
@@ -78,7 +93,8 @@ void format() {
           line = match.suffix();
         }
       }
-    } else if (line.find("iops") != string::npos) {
+    }
+    if (line.find("iops") != string::npos) {
       // 提取IOPS数字
       regex iops_regex(R"(\d+\.\d+|\d+)");
       smatch match;
@@ -95,19 +111,31 @@ void format() {
   for (const string &s : iops_num) {
     iops_int.push_back(static_cast<int>(stof(s)));
   }
-  cout << name << "单次带宽运行结果:"
+
+  // DEBUG: 检查原始数据是否正常
+  //   for (int a : bw_int) {
+  //     cout << a << endl;
+  //   }
+
+  cout << name << " | 第" << i << "次带宽运行结果:"
        << "min:" << bw_int[0] << " max:" << bw_int[1] << " avg:" << bw_int[3]
        << "\n"
-       << name << "单次IOPS运行结果:"
+       << name << " | 第" << i << "次次IOPS运行结果:"
        << "min:" << iops_int[0] << " max:" << iops_int[1]
        << " avg:" << iops_int[3] << endl;
   // 整理带宽和IOPS数据
-  bw[0] += bw_int[0];
+  bw[0] = bw_int[0];
   bw[1] += bw_int[1];
   bw[2] += bw_int[3];
   iops[0] += iops_int[0];
   iops[1] += iops_int[1];
   iops[2] += iops_int[2];
+  // 重置数据
+  bw_int.clear();
+  iops_int.clear();
+}
+
+void fio_sum(const string &name) {
 
   // 计算最小、最大和平均值
   int bwMin = bw[0] / 3;
@@ -116,7 +144,6 @@ void format() {
   int iopsMin = iops[0] / 3;
   int iopsMax = iops[1] / 3;
   int iopsAvg = iops[2] / 3;
-
   // 将结果存储到数据表中，第一列是 randwrite_4k，后面是6个值
   values = {bwMin, bwMax, bwAvg, iopsMin, iopsMax, iopsAvg};
   row = {name};
@@ -124,6 +151,23 @@ void format() {
     row.push_back(to_string(val)); // 将每个值转换为字符串并添加到行中
   }
   run_report.push_back(row); // 将这行添加到数据中}
+  // 重置数据
+  fill(begin(bw), end(bw), 0);
+  fill(begin(iops), end(iops), 0);
+}
+
+void runReport() {
+  // 输出存储的数据，模拟 Excel 风格
+  cout << "测试类型\t带宽最小值\t带宽最大值\t带宽均值\tIOPS最大值\tIOPS最小"
+          "值\t"
+          "IOPS均值"
+       << endl;
+  for (const auto &row : run_report) {
+    for (const auto &cell : row) {
+      cout << cell << "\t";
+    }
+    cout << endl;
+  }
 }
 
 // --- 顺序写和读开始 ---
@@ -139,11 +183,7 @@ void seq() {
   string DorF[] = {"filename=" + dir,
                    "directory=" + dir}; // 用数组配置单文件和文件夹
   for (string dorf : DorF) {
-
-    vector<int> bw = {0, 0, 0};
-    vector<int> iops = {0, 0, 0};
     for (int i = 0; i < 4; ++i) {
-
       if (dorf.find("file") != string::npos) {
 
         int bs_group[] = {512, 1024}; // 用数组配置bs块大小
@@ -163,20 +203,17 @@ void seq() {
                         +" -direct=" + direct + " -rw=" + rw +
                         " -ioengine=" + ioengine + " -numjobs=1" +
                         " -group_reporting -iodepth=" + to_string(iodepth) +
-                        " -" + dorf + to_string(iodepth) + to_string(bs) +
-                        "k/" + +"/" + to_string(i) + " -randrepeat=0";
+                        " -" + dorf + to_string(iodepth) + "_" + to_string(bs) +
+                        "k/" + to_string(i) + " -randrepeat=0";
 
-              // 重复运行4次并舍弃第一次运行结果
-
-              for (int i = 0; i < 4; i++) {
+              // 重复运行3次
+              for (int i = 1; i <= 3; i++) {
                 // 输出本次运行的命令以便排障
-                cout << "本次运行的命令是：" << fio_cmd << endl;
-                run_cmd(fio_cmd); // 先运行
-                if (i == 0) {
-                  continue; // 跳过第一次结果分析}
-                }
-                format();
+                cout << i << "次运行的命令是：" << fio_cmd << endl;
+                run_cmd(fio_cmd);
+                format(i);
               }
+              fio_sum(name);
             }
           }
         }
@@ -203,21 +240,18 @@ void seq() {
                           " -rw=" + rw + " -ioengine=" + ioengine +
                           " -numjobs=" + to_string(numjob) +
                           " -group_reporting -iodepth=" + to_string(iodepth) +
-                          " -" + dorf + to_string(iodepth) + "/" +
-                          to_string(bs) + "k/" + to_string(i) +
+                          " -" + dorf + to_string(iodepth) + "_" +
+                          to_string(bs) + "k_" + to_string(i) +
                           "/ -randrepeat=0";
 
-                // 重复运行4次并舍弃第一次运行结果
-
-                for (int i = 0; i < 4; i++) {
+                // 重复运行3次
+                for (int i = 1; i <= 3; i++) {
                   // 输出本次运行的命令以便排障
-                  cout << "本次运行的命令是：" << fio_cmd << endl;
-                  run_cmd(fio_cmd); // 先运行
-                  if (i == 0) {
-                    continue; // 跳过第一次结果分析}
-                  }
-                  format();
+                  cout << i << "本次运行的命令是：" << fio_cmd << endl;
+                  run_cmd(fio_cmd);
+                  format(i);
                 }
+                fio_sum(name);
               }
             }
           }
@@ -227,17 +261,3 @@ void seq() {
   }
 }
 // --- 顺序写结束 ---
-
-void runReport() {
-  // 输出存储的数据，模拟 Excel 风格
-  cout << "测试类型\t带宽最小值\t带宽最大值\t带宽均值\tIOPS最大值\tIOPS最小"
-          "值\t"
-          "IOPS均值"
-       << endl;
-  for (const auto &row : run_report) {
-    for (const auto &cell : row) {
-      cout << cell << "\t";
-    }
-    cout << endl;
-  }
-}

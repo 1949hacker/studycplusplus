@@ -14,7 +14,7 @@ int main() {
   rm_file();
 
   // 进行随机写测试
-  randwrite_4k();
+  seqRead();
 
   // 删除临时文件
   rm_file();

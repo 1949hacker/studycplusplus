@@ -166,12 +166,11 @@ void seq() {
                         " -" + dorf + to_string(iodepth) + to_string(bs) +
                         "k/" + +"/" + to_string(i) + " -randrepeat=0";
 
-              // break跳出用于检查fio命令生成是否正常
-              cout << fio_cmd << endl;
-
               // 重复运行4次并舍弃第一次运行结果
 
               for (int i = 0; i < 4; i++) {
+                // 输出本次运行的命令以便排障
+                cout << "本次运行的命令是：" << fio_cmd << endl;
                 run_cmd(fio_cmd); // 先运行
                 if (i == 0) {
                   continue; // 跳过第一次结果分析}
@@ -208,12 +207,11 @@ void seq() {
                           to_string(bs) + "k/" + to_string(i) +
                           "/ -randrepeat=0";
 
-                // break跳出用于检查fio命令生成是否正常
-                cout << fio_cmd << endl;
-
                 // 重复运行4次并舍弃第一次运行结果
 
                 for (int i = 0; i < 4; i++) {
+                  // 输出本次运行的命令以便排障
+                  cout << "本次运行的命令是：" << fio_cmd << endl;
                   run_cmd(fio_cmd); // 先运行
                   if (i == 0) {
                     continue; // 跳过第一次结果分析}

@@ -14,7 +14,7 @@ using namespace std;
 // 全局参数
 int bwMin, bwMax, bwAvg, iopsMin, iopsMax, iopsAvg, bw[] = {0, 0, 0},
                                                     iops[] = {0, 0, 0};
-string dir, fsize, ioengine, name, fio_cmd, runtime, direct, line, log;
+string dir, fsize, ioengine, name, fio_cmd, runtime, direct, line;
 stringstream fio_output;
 vector<vector<string>> run_report;
 vector<string> row;
@@ -157,14 +157,16 @@ void fio_sum(const string &name) {
 }
 
 void runReport() {
-  // 打开文件用于写入，如果文件不存在则创建，如果存在则覆盖原有内容
-  ofstream outputFile("fio.csv");
+  // 打开文件用于追加写入
+  ofstream outputFile("/var/log/fio_tool/fio.csv", ios::app);
 
   if (outputFile.is_open()) {
-    // 输出存储的数据，模拟 Excel 风格
-    outputFile << "测试类型,带宽最小值,带宽最大值,带宽均值,IOPS最大值,"
-                  "IOPS最小值,IOPS均值"
-               << endl;
+    // 如果文件为空，先写入表头（假设表头只在文件为空时写入一次）
+    if (outputFile.tellp() == 0) {
+      outputFile << "测试类型,带宽最小值,带宽最大值,带宽均值,IOPS最大值,"
+                    "IOPS最小值,IOPS均值"
+                 << endl;
+    }
 
     for (const auto &row : run_report) {
       for (const auto &cell : row) {
@@ -176,14 +178,14 @@ void runReport() {
     // 关闭文件
     outputFile.close();
 
-    cout << "数据已成功写入fio.csv文件。" << endl;
+    cout << "数据已成功追加到fio.csv文件。" << endl;
   } else {
-    cerr << "无法打开fio.csv文件进行写入。" << endl;
+    cerr << "无法打开fio.csv文件进行追加写入。" << endl;
   }
 }
 
 // --- 顺序写和读开始 ---
-void seq() {
+void fio_seq() {
 
   // 文件
   cout << "顺序写和读测试，共计200项，每项3次，每次" + runtime + "秒，共计" +
@@ -208,7 +210,7 @@ void seq() {
               name = "seq_" + rw +
                      "_filename_numjobs=1_iodepth=" + to_string(iodepth) +
                      "_bs=" + to_string(bs) + "k";
-              // 构建fio命令
+              // 构建单文件fio命令
               fio_cmd = "fio -name=" + name + " -size=" + fsize +
                         "G -runtime=" + runtime +
                         "s -time_base -bs=" + to_string(bs) + "k" +
@@ -244,8 +246,10 @@ void seq() {
                 name = "seq_" + rw + "_directory_numjobs=" + to_string(numjob) +
                        "_iodepth=" + to_string(iodepth) +
                        "_bs=" + to_string(bs) + "k";
-                // 构建fio命令
-                fio_cmd = "fio -name=" + name + " -size=" + fsize +
+                // 构建文件夹fio命令
+                fio_cmd = "mkdir -p " + dir + to_string(iodepth) + "_" +
+                          to_string(bs) + "k_" + to_string(i) +
+                          "/&&fio -name=" + name + " -size=" + fsize +
                           "G -runtime=" + runtime +
                           "s -time_base -bs=1m -direct=" + direct +
                           " -rw=" + rw + " -ioengine=" + ioengine +
@@ -299,7 +303,7 @@ void fio_rand() {
               name = "seq_" + rw +
                      "_filename_numjobs=1_iodepth=" + to_string(iodepth) +
                      "_bs=" + to_string(bs) + "k";
-              // 构建fio命令
+              // 构建单文件fio命令
               fio_cmd = "fio -name=" + name + " -size=" + fsize +
                         "G -runtime=" + runtime +
                         "s -time_base -bs=" + to_string(bs) + "k" +
@@ -334,8 +338,10 @@ void fio_rand() {
                 name = "seq_" + rw + "_directory_numjobs=" + to_string(numjob) +
                        "_iodepth=" + to_string(iodepth) +
                        "_bs=" + to_string(bs) + "k";
-                // 构建fio命令
-                fio_cmd = "fio -name=" + name + " -size=" + fsize +
+                // 构建文件夹fio命令
+                fio_cmd = "mkdir -p " + dir + to_string(iodepth) + "_" +
+                          to_string(bs) + "k_" + to_string(i) +
+                          "/&&fio -name=" + name + " -size=" + fsize +
                           "G -runtime=" + runtime +
                           "s -time_base -bs=1m -direct=" + direct +
                           " -rw=" + rw + " -ioengine=" + ioengine +
@@ -384,12 +390,12 @@ void fio_randrw() {
           int iodepth_group[] = {1, 2, 8, 16, 32}; // 用数组配置iodepth循环
           for (int iodepth : iodepth_group) {
             // 先写后读
-            string rw_group[] = {"randrw -rwmixwrite=50"};
+            string rw_group[] = {"randrw"};
             for (string rw : rw_group) {
               name = "seq_" + rw +
                      "_filename_numjobs=1_iodepth=" + to_string(iodepth) +
                      "_bs=" + to_string(bs) + "k";
-              // 构建fio命令
+              // 构建单文件fio命令
               fio_cmd = "fio -name=" + name + " -size=" + fsize +
                         "G -runtime=" + runtime +
                         "s -time_base -bs=" + to_string(bs) + "k" +
@@ -397,7 +403,8 @@ void fio_randrw() {
                         " -ioengine=" + ioengine + " -numjobs=1" +
                         " -group_reporting -iodepth=" + to_string(iodepth) +
                         " -" + dorf + to_string(iodepth) + "_" + to_string(bs) +
-                        "k/" + to_string(i) + " -randrepeat=0";
+                        "k/" + to_string(i) + " -randrepeat=0" +
+                        " -rwmixwrite=50";
 
               // 重复运行3次
               for (int i = 1; i <= 3; i++) {
@@ -424,8 +431,10 @@ void fio_randrw() {
                 name = "seq_" + rw + "_directory_numjobs=" + to_string(numjob) +
                        "_iodepth=" + to_string(iodepth) +
                        "_bs=" + to_string(bs) + "k";
-                // 构建fio命令
-                fio_cmd = "fio -name=" + name + " -size=" + fsize +
+                // 构建文件夹fio命令
+                fio_cmd = "mkdir -p " + dir + to_string(iodepth) + "_" +
+                          to_string(bs) + "k_" + to_string(i) +
+                          "/&&fio -name=" + name + " -size=" + fsize +
                           "G -runtime=" + runtime +
                           "s -time_base -bs=1m -direct=" + direct +
                           " -rw=" + rw + " -ioengine=" + ioengine +
@@ -433,7 +442,7 @@ void fio_randrw() {
                           " -group_reporting -iodepth=" + to_string(iodepth) +
                           " -" + dorf + to_string(iodepth) + "_" +
                           to_string(bs) + "k_" + to_string(i) +
-                          "/ -randrepeat=0";
+                          "/ -randrepeat=0" + " -rwmixwrite=50";
 
                 // 重复运行3次
                 for (int i = 1; i <= 3; i++) {

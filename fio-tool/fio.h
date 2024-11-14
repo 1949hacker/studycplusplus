@@ -6,7 +6,13 @@
 void setConfig();
 
 // 顺序写和读
-void seq();
+void fio_seq();
+
+// 随机写和读
+void fio_rand();
+
+// 随机读写测试
+void fio_randrw();
 
 // 删除测试文件
 void rm_file();

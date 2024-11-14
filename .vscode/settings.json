@@ -17,6 +17,8 @@
         "initializer_list": "cpp",
         "span": "cpp",
         "format": "cpp",
-        "text_encoding": "cpp"
+        "text_encoding": "cpp",
+        "ctime": "cpp",
+        "cmath": "cpp"
     }
 }

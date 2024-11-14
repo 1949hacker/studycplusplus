@@ -5,8 +5,8 @@
 // 设置测试参数
 void setConfig();
 
-// 顺序读
-void seq_write();
+// 顺序写和读
+void seq();
 
 // 删除测试文件
 void rm_file();

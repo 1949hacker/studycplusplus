@@ -130,9 +130,9 @@ void format() {
 void seq() {
 
   // 文件
-  cout << "顺序写和读测试，共计100项，每项" + runtime + "秒，共计" +
-              to_string(stoi(runtime) * 50) + "秒，约" +
-              to_string(stoi(runtime) * 50 / 60 / 60) + "小时\n进行中..."
+  cout << "顺序写和读测试，共计200项，每项" + runtime + "秒，共计" +
+              to_string(stoi(runtime) * 200) + "秒，约" +
+              to_string(stoi(runtime) * 200 / 60 / 60) + "小时\n进行中..."
        << endl;
 
   // numjobs=1
@@ -161,7 +161,7 @@ void seq() {
                         "G -runtime=" + runtime +
                         "s -time_base -bs=" + to_string(bs) + "k" +
                         +" -direct=" + direct + " -rw=" + rw +
-                        "-ioengine=" + ioengine + " -numjobs=1" +
+                        " -ioengine=" + ioengine + " -numjobs=1" +
                         " -group_reporting -iodepth=" + to_string(iodepth) +
                         " -" + dorf + to_string(iodepth) + to_string(bs) +
                         "k/" + +"/" + to_string(i) + " -randrepeat=0";
@@ -169,15 +169,16 @@ void seq() {
               // break跳出用于检查fio命令生成是否正常
               cout << fio_cmd << endl;
 
-            // 重复运行4次并舍弃第一次运行结果
-            /*
-            for (int i = 0; i < 4; i++) {
-              run_cmd(fio_cmd); // 先运行
-              if (i == 0) {
-                continue; // 跳过第一次结果分析}
+              // 重复运行4次并舍弃第一次运行结果
+
+              for (int i = 0; i < 4; i++) {
+                run_cmd(fio_cmd); // 先运行
+                if (i == 0) {
+                  continue; // 跳过第一次结果分析}
+                }
+                format();
               }
-              format();
-            }*/}
+            }
           }
         }
       } else if (dorf.find("directory") != string::npos) {
@@ -200,9 +201,8 @@ void seq() {
                 fio_cmd = "fio -name=" + name + " -size=" + fsize +
                           "G -runtime=" + runtime +
                           "s -time_base -bs=1m -direct=" + direct +
-                          " -rw=write "
-                          "-ioengine=" +
-                          ioengine + " -numjobs=" + to_string(numjob) +
+                          " -rw=" + rw + " -ioengine=" + ioengine +
+                          " -numjobs=" + to_string(numjob) +
                           " -group_reporting -iodepth=" + to_string(iodepth) +
                           " -" + dorf + to_string(iodepth) + "/" +
                           to_string(bs) + "k/" + to_string(i) +
@@ -211,15 +211,16 @@ void seq() {
                 // break跳出用于检查fio命令生成是否正常
                 cout << fio_cmd << endl;
 
-              // 重复运行4次并舍弃第一次运行结果
-              /*
-              for (int i = 0; i < 4; i++) {
-                run_cmd(fio_cmd); // 先运行
-                if (i == 0) {
-                  continue; // 跳过第一次结果分析}
+                // 重复运行4次并舍弃第一次运行结果
+
+                for (int i = 0; i < 4; i++) {
+                  run_cmd(fio_cmd); // 先运行
+                  if (i == 0) {
+                    continue; // 跳过第一次结果分析}
+                  }
+                  format();
                 }
-                format();
-              }*/}
+              }
             }
           }
         }

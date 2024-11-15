@@ -1,6 +1,6 @@
-// fio.h
-#ifndef FIO
-#define FIO
+// fio.hpp
+#ifndef FIO_HPP
+#define FIO_HPP
 
 // 设置测试参数
 void setConfig();
@@ -20,4 +20,4 @@ void rm_file();
 // 输出结果
 void runReport();
 
-#endif // FIO
+#endif // FIO_HPP

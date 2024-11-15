@@ -141,9 +141,12 @@ void format(const int &i) {
     bw[3] = bw_int[6];
     bw[4] += bw_int[7];
     bw[5] += bw_int[9];
-    iops[0] += iops_int[5];
-    iops[1] += iops_int[6];
-    iops[2] += iops_int[7];
+    iops[0] += iops_int[0];
+    iops[1] += iops_int[1];
+    iops[2] += iops_int[2];
+    iops[3] += iops_int[5];
+    iops[4] += iops_int[6];
+    iops[5] += iops_int[7];
   } else {
     cout << name << " | 第" << i << "次带宽运行结果:"
          << "min:" << bw_int[0] << " max:" << bw_int[1] << " avg:" << bw_int[3]

@@ -135,7 +135,7 @@ void format(const int &i) {
          << "min:" << iops_int[5] << " max:" << iops_int[6]
          << " avg:" << iops_int[7] << endl;
     // 整理带宽和IOPS数据
-    bw[0] = bw_int[0];
+    bw[0] += bw_int[0];
     bw[1] += bw_int[1];
     bw[2] += bw_int[3];
     bw[3] = bw_int[6];
@@ -152,17 +152,13 @@ void format(const int &i) {
          << "min:" << iops_int[0] << " max:" << iops_int[1]
          << " avg:" << iops_int[3] << endl;
     // 整理带宽和IOPS数据
-    bw[0] = bw_int[0];
+    bw[0] += bw_int[0];
     bw[1] += bw_int[1];
     bw[2] += bw_int[3];
     iops[0] += iops_int[0];
     iops[1] += iops_int[1];
     iops[2] += iops_int[2];
   }
-
-  // 重置数据
-  bw_int.clear();
-  iops_int.clear();
 }
 
 void fio_sum(const string &name) {
@@ -220,7 +216,9 @@ void runReport() {
     // 如果文件为空，先写入表头（假设表头只在文件为空时写入一次）
     if (outputFile.tellp() == 0) {
       outputFile << "测试类型,带宽最小值,带宽最大值,带宽均值,IOPS最大值,"
-                    "IOPS最小值,IOPS均值"
+                    "IOPS最小值,IOPS均值,写带宽最小值,写带宽最大值,写带宽均值,"
+                    "写IOPS最大值,"
+                    "写IOPS最小值,写IOPS均值,"
                  << endl;
     }
 
@@ -282,6 +280,9 @@ void fio_seq() {
                 cout << i << "次运行的命令是：" << fio_cmd << endl;
                 run_cmd(fio_cmd);
                 format(i);
+                // 重置数据
+                bw_int.clear();
+                iops_int.clear();
               }
               fio_sum(name);
               rm_file();
@@ -322,6 +323,9 @@ void fio_seq() {
                   cout << i << "本次运行的命令是：" << fio_cmd << endl;
                   run_cmd(fio_cmd);
                   format(i);
+                  // 重置数据
+                  bw_int.clear();
+                  iops_int.clear();
                 }
                 fio_sum(name);
                 rm_file();
@@ -377,6 +381,9 @@ void fio_rand() {
                 cout << i << "次运行的命令是：" << fio_cmd << endl;
                 run_cmd(fio_cmd);
                 format(i);
+                // 重置数据
+                bw_int.clear();
+                iops_int.clear();
               }
               fio_sum(name);
               rm_file();
@@ -416,6 +423,9 @@ void fio_rand() {
                   cout << i << "本次运行的命令是：" << fio_cmd << endl;
                   run_cmd(fio_cmd);
                   format(i);
+                  // 重置数据
+                  bw_int.clear();
+                  iops_int.clear();
                 }
                 fio_sum(name);
                 rm_file();
@@ -474,6 +484,9 @@ void fio_randrw() {
 
                 string read_or_write[] = {"read", "write"};
                 format(i);
+                // 重置数据
+                bw_int.clear();
+                iops_int.clear();
               }
               fio_sum(name);
               rm_file();
@@ -513,6 +526,9 @@ void fio_randrw() {
                   cout << i << "本次运行的命令是：" << fio_cmd << endl;
                   run_cmd(fio_cmd);
                   format(i);
+                  // 重置数据
+                  bw_int.clear();
+                  iops_int.clear();
                 }
                 fio_sum(name);
                 rm_file();

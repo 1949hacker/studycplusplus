@@ -12,8 +12,8 @@
 using namespace std;
 
 // 全局参数
-int bwMin, bwMax, bwAvg, iopsMin, iopsMax, iopsAvg, bw[] = {0, 0, 0},
-                                                    iops[] = {0, 0, 0};
+int bwMin, bwMax, bwAvg, iopsMin, iopsMax, iopsAvg, bw[] = {0, 0, 0, 0, 0, 0},
+                                                    iops[] = {0, 0, 0, 0, 0, 0};
 string dir, fsize, ioengine, name, fio_cmd, runtime, direct, line;
 stringstream fio_output;
 vector<vector<string>> run_report;
@@ -69,38 +69,41 @@ void format(const int &i) {
   vector<string> bw_num, iops_num;
 
   while (getline(fio_output, line)) {
-    if (line.find("bw ") != string::npos) {
-      if (line.find("MiB") != string::npos) {
-        cout << "检测到单位MiB/s，将转换为KiB/s" << endl;
-        // 提取带宽数字
-        regex bw_regex(R"(\d+\.\d+|\d+)");
-        smatch match;
-        while (regex_search(line, match, bw_regex)) {
-          // 检测到单位是MiB，则转换为KiB
-          float bw_value_kib = stof(match.str());
-          bw_value_kib *= 1024;
-          int bw_value_bytes = static_cast<int>(bw_value_kib); // 转为整数
-          bw_num.push_back(to_string(bw_value_bytes));
-          line = match.suffix();
-        }
-      } else if (line.find("KiB") != string::npos) {
-        cout << "检测到单位KiB/s，直接提取" << endl;
-        // 提取带宽数字
-        regex bw_regex(R"(\d+\.\d+|\d+)");
-        smatch match;
-        while (regex_search(line, match, bw_regex)) {
-          bw_num.push_back(match.str());
-          line = match.suffix();
+    if (line.find("samples") != string::npos) {
+      cout << "筛选成功，原始数据：" << line << endl;
+      if (line.find("bw ") != string::npos) {
+        if (line.find("MiB") != string::npos) {
+          cout << "检测到单位MiB/s，将转换为KiB/s" << endl;
+          // 提取带宽数字
+          regex bw_regex(R"(\d+\.\d+|\d+)");
+          smatch match;
+          while (regex_search(line, match, bw_regex)) {
+            // 检测到单位是MiB，则转换为KiB
+            float bw_value_kib = stof(match.str());
+            bw_value_kib *= 1024;
+            int bw_value_bytes = static_cast<int>(bw_value_kib); // 转为整数
+            bw_num.push_back(to_string(bw_value_bytes));
+            line = match.suffix();
+          }
+        } else if (line.find("KiB") != string::npos) {
+          cout << "检测到单位KiB/s，直接提取" << endl;
+          // 提取带宽数字
+          regex bw_regex(R"(\d+\.\d+|\d+)");
+          smatch match;
+          while (regex_search(line, match, bw_regex)) {
+            bw_num.push_back(match.str());
+            line = match.suffix();
+          }
         }
       }
-    }
-    if (line.find("iops") != string::npos) {
-      // 提取IOPS数字
-      regex iops_regex(R"(\d+\.\d+|\d+)");
-      smatch match;
-      while (regex_search(line, match, iops_regex)) {
-        iops_num.push_back(match.str());
-        line = match.suffix();
+      if (line.find("iops") != string::npos) {
+        // 提取IOPS数字
+        regex iops_regex(R"(\d+\.\d+|\d+)");
+        smatch match;
+        while (regex_search(line, match, iops_regex)) {
+          iops_num.push_back(match.str());
+          line = match.suffix();
+        }
       }
     }
   }
@@ -113,23 +116,50 @@ void format(const int &i) {
   }
 
   // DEBUG: 检查原始数据是否正常
-  //   for (int a : bw_int) {
-  //     cout << a << endl;
-  //   }
+  // for (int a : bw_int) {
+  //   cout << a << endl;
+  // }
 
-  cout << name << " | 第" << i << "次带宽运行结果:"
-       << "min:" << bw_int[0] << " max:" << bw_int[1] << " avg:" << bw_int[3]
-       << "\n"
-       << name << " | 第" << i << "次次IOPS运行结果:"
-       << "min:" << iops_int[0] << " max:" << iops_int[1]
-       << " avg:" << iops_int[3] << endl;
-  // 整理带宽和IOPS数据
-  bw[0] = bw_int[0];
-  bw[1] += bw_int[1];
-  bw[2] += bw_int[3];
-  iops[0] += iops_int[0];
-  iops[1] += iops_int[1];
-  iops[2] += iops_int[2];
+  if (bw_int[6] != 0) {
+    // 混合读写
+    cout << name << " | 第" << i << "次带宽运行<读>结果:"
+         << "min:" << bw_int[0] << " max:" << bw_int[1] << " avg:" << bw_int[3]
+         << "\n"
+         << name << " | 第" << i << "次次IOPS运行<读>结果:"
+         << "min:" << iops_int[0] << " max:" << iops_int[1]
+         << " avg:" << iops_int[3] << endl;
+    cout << name << " | 第" << i << "次带宽运行<写>结果:"
+         << "min:" << bw_int[6] << " max:" << bw_int[7] << " avg:" << bw_int[9]
+         << "\n"
+         << name << " | 第" << i << "次次IOPS运行<写>结果:"
+         << "min:" << iops_int[5] << " max:" << iops_int[6]
+         << " avg:" << iops_int[7] << endl;
+    // 整理带宽和IOPS数据
+    bw[0] = bw_int[0];
+    bw[1] += bw_int[1];
+    bw[2] += bw_int[3];
+    bw[3] = bw_int[6];
+    bw[4] += bw_int[7];
+    bw[5] += bw_int[9];
+    iops[0] += iops_int[5];
+    iops[1] += iops_int[6];
+    iops[2] += iops_int[7];
+  } else {
+    cout << name << " | 第" << i << "次带宽运行结果:"
+         << "min:" << bw_int[0] << " max:" << bw_int[1] << " avg:" << bw_int[3]
+         << "\n"
+         << name << " | 第" << i << "次次IOPS运行结果:"
+         << "min:" << iops_int[0] << " max:" << iops_int[1]
+         << " avg:" << iops_int[3] << endl;
+    // 整理带宽和IOPS数据
+    bw[0] = bw_int[0];
+    bw[1] += bw_int[1];
+    bw[2] += bw_int[3];
+    iops[0] += iops_int[0];
+    iops[1] += iops_int[1];
+    iops[2] += iops_int[2];
+  }
+
   // 重置数据
   bw_int.clear();
   iops_int.clear();
@@ -137,20 +167,46 @@ void format(const int &i) {
 
 void fio_sum(const string &name) {
 
-  // 计算最小、最大和平均值
-  int bwMin = bw[0] / 3;
-  int bwMax = bw[1] / 3;
-  int bwAvg = bw[2] / 3;
-  int iopsMin = iops[0] / 3;
-  int iopsMax = iops[1] / 3;
-  int iopsAvg = iops[2] / 3;
-  // 将结果存储到数据表中，第一列是 randwrite_4k，后面是6个值
-  values = {bwMin, bwMax, bwAvg, iopsMin, iopsMax, iopsAvg};
-  row = {name};
-  for (int val : values) {
-    row.push_back(to_string(val)); // 将每个值转换为字符串并添加到行中
+  if (bw[3] != 0) {
+    // 针对混合读写处理
+    //  计算最小、最大和平均值
+    int RbwMin = bw[0] / 3;
+    int RbwMax = bw[1] / 3;
+    int RbwAvg = bw[2] / 3;
+    int RiopsMin = iops[0] / 3;
+    int RiopsMax = iops[1] / 3;
+    int RiopsAvg = iops[2] / 3;
+    int WbwMin = bw[3] / 3;
+    int WbwMax = bw[4] / 3;
+    int WbwAvg = bw[5] / 3;
+    int WiopsMin = iops[3] / 3;
+    int WiopsMax = iops[4] / 3;
+    int WiopsAvg = iops[5] / 3;
+    // 将结果存储到数据表中，第一列是 名称，后面是6个值
+    values = {RbwMin, RbwMax, RbwAvg, RiopsMin, RiopsMax, RiopsAvg,
+              WbwMin, WbwMax, WbwAvg, WiopsMin, WiopsMax, WiopsAvg};
+    row = {name};
+    for (int val : values) {
+      row.push_back(to_string(val)); // 将每个值转换为字符串并添加到行中
+    }
+    run_report.push_back(row); // 将这行添加到数据中
+  } else {
+    // 计算最小、最大和平均值
+    int bwMin = bw[0] / 3;
+    int bwMax = bw[1] / 3;
+    int bwAvg = bw[2] / 3;
+    int iopsMin = iops[0] / 3;
+    int iopsMax = iops[1] / 3;
+    int iopsAvg = iops[2] / 3;
+    // 将结果存储到数据表中，第一列是 名称，后面是6个值
+    values = {bwMin, bwMax, bwAvg, iopsMin, iopsMax, iopsAvg};
+    row = {name};
+    for (int val : values) {
+      row.push_back(to_string(val)); // 将每个值转换为字符串并添加到行中
+    }
+    run_report.push_back(row); // 将这行添加到数据中
   }
-  run_report.push_back(row); // 将这行添加到数据中}
+
   // 重置数据
   fill(begin(bw), end(bw), 0);
   fill(begin(iops), end(iops), 0);
@@ -228,6 +284,7 @@ void fio_seq() {
                 format(i);
               }
               fio_sum(name);
+              rm_file();
             }
           }
         }
@@ -267,6 +324,7 @@ void fio_seq() {
                   format(i);
                 }
                 fio_sum(name);
+                rm_file();
               }
             }
           }
@@ -321,6 +379,7 @@ void fio_rand() {
                 format(i);
               }
               fio_sum(name);
+              rm_file();
             }
           }
         }
@@ -359,6 +418,7 @@ void fio_rand() {
                   format(i);
                 }
                 fio_sum(name);
+                rm_file();
               }
             }
           }
@@ -411,9 +471,12 @@ void fio_randrw() {
                 // 输出本次运行的命令以便排障
                 cout << i << "次运行的命令是：" << fio_cmd << endl;
                 run_cmd(fio_cmd);
+
+                string read_or_write[] = {"read", "write"};
                 format(i);
               }
               fio_sum(name);
+              rm_file();
             }
           }
         }
@@ -452,6 +515,7 @@ void fio_randrw() {
                   format(i);
                 }
                 fio_sum(name);
+                rm_file();
               }
             }
           }

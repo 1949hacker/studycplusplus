@@ -489,7 +489,7 @@ void fio_randrw() {
             int iodepth_group[] = {1, 2, 8, 16, 32}; // 用数组配置iodepth循环
             for (int iodepth : iodepth_group) {
               // 先写后读
-              string rw_group[] = {"randrw -rwmixwrite=50"};
+              string rw_group[] = {"randrw"};
               for (string rw : rw_group) {
                 name = "seq_" + rw + "_directory_numjobs=" + to_string(numjob) +
                        "_iodepth=" + to_string(iodepth) +

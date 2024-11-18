@@ -72,15 +72,16 @@ int main() {
   time_t log_time = time(nullptr);
   tm *localTime = localtime(&log_time);
   char timeStr[20];
-  strftime(timeStr, sizeof(timeStr), "/var/log/fio_tool/%Y-%m-%d-%H-%M-%S",
-           localTime);
-  string fileName = string(timeStr) + ".log";
+  strftime(timeStr, sizeof(timeStr), "%Y-%m-%d-%H-%M-%S", localTime);
+  string fileName = "/var/log/fio_tool/" + string(timeStr) + ".log";
 
   // 创建日志文件流
   ofstream logFile(fileName, ios::app);
   if (!logFile) {
     cerr << "无法创建日志文件！" << endl;
     return 1;
+  } else {
+    cout << "成功创建日志文件：" << fileName << endl;
   }
 
   // 重定向 cout 输出到日志文件和控制台

@@ -215,6 +215,7 @@ void fio_sum(const string &name) {
 }
 
 void runReport() {
+
   // 打开文件用于追加写入
   ofstream outputFile("/var/log/fio_tool/fio.csv", ios::app);
 
@@ -242,6 +243,9 @@ void runReport() {
   } else {
     cerr << "无法打开fio.csv文件进行追加写入。" << endl;
   }
+  cout << "已重置run_report" << endl;
+  // 重置run_report
+  run_report.clear();
 }
 
 // --- 顺序写和读开始 ---
@@ -257,76 +261,32 @@ void fio_seq() {
   string DorF[] = {"filename=" + dir, "directory=" + dir};
   for (string dorf : DorF) {
     if (dorf.find("file") != string::npos) { // 如果是单文件
-      // numjobs=1
-      int bs_group[] = {512, 1024};
-      // bs=512/1024k
-      for (int bs : bs_group) {
-        int iodepth_group[] = {1, 2, 8, 16, 32};
-        // iodepth=1/2/8/16/32
-        for (int iodepth : iodepth_group) {
-          for (int i = 1; i < 3; i++) { // 重复运行3次
+                                             // numjobs=8/16
+      string numjobs[] = {"1"};              // 用数组配置numjobs
+      for (string numjob : numjobs) {
+        // bs=4k
+        string bs_group[] = {"512", "1024"}; // 用数组配置bs块大小
+        for (string bs : bs_group) {
+          string iodepth_group[] = {"1", "2", "8", "16",
+                                    "32"}; // 用数组配置iodepth循环
+          // iodepth=1/2/8/16/32
+          for (string iodepth : iodepth_group) {
             // 先写后读
             string rw_group[] = {"write", "read"};
             for (string rw : rw_group) {
-              // 生成名称
-              name = "seq_" + rw +
-                     "_filename_numjobs=1_iodepth=" + to_string(iodepth) +
-                     "_bs=" + to_string(bs) + "k";
-              // 构建单文件fio命令
-              fio_cmd = "fio -name=" + name + " -size=" + fsize +
-                        "G -runtime=" + runtime +
-                        "s -time_base -bs=" + to_string(bs) + "k" +
-                        +" -direct=" + direct + " -rw=" + rw +
-                        " -ioengine=" + ioengine + " -numjobs=1" +
-                        " -group_reporting -iodepth=" + to_string(iodepth) +
-                        " -" + dorf + to_string(iodepth) + "_" + to_string(bs) +
-                        "k/" + to_string(i) + " -randrepeat=0";
-              // 输出本次运行的命令以便排障
-              cout << i << "次运行的命令是：" << fio_cmd << endl;
-              run_cmd(fio_cmd);
-              format(i);
-              // 重置数据
-              bw_int.clear();
-              iops_int.clear();
-            }
-            fio_sum(name);
-            rm_file();
-          }
-          runReport();
-        }
-      }
-    } else if (dorf.find("directory") != string::npos) {
-      // numjobs=8/16
-      int numjobs[] = {8, 16}; // 用数组配置numjobs
-      for (int numjob : numjobs) {
-        // bs=128/256/512/1024
-        int bs_group[] = {128, 256, 512, 1024}; // 用数组配置bs块大小
-        for (int bs : bs_group) {
-          int iodepth_group[] = {1, 2, 8, 16, 32}; // 用数组配置iodepth循环
-          // iodepth=1/2/8/16/32
-          for (int iodepth : iodepth_group) {
-            // 重复运行3次
-            for (int i = 1; i <= 3; i++) {
-              // 先写后读
-              string rw_group[] = {"write", "read"};
-              for (string rw : rw_group) {
-                name = "seq_" + rw + "_directory_numjobs=" + to_string(numjob) +
-                       "_iodepth=" + to_string(iodepth) +
-                       "_bs=" + to_string(bs) + "k";
+              // 重复运行3次
+              name = "seq_" + rw + "_" + dorf + "_numjobs=" + numjob +
+                     "_iodepth=" + iodepth + "_bs=" + bs + "k";
+              for (int i = 1; i <= 3; i++) {
                 // 构建文件夹fio命令
-                fio_cmd = "mkdir -p " + dir + to_string(iodepth) + "_" +
-                          to_string(bs) + "k_" + to_string(i) +
-                          "/&&fio -name=" + name + " -size=" + fsize +
-                          "G -runtime=" + runtime +
-                          "s -time_base -bs=1m -direct=" + direct +
-                          " -rw=" + rw + " -ioengine=" + ioengine +
-                          " -numjobs=" + to_string(numjob) +
-                          " -group_reporting -iodepth=" + to_string(iodepth) +
-                          " -" + dorf + to_string(iodepth) + "_" +
-                          to_string(bs) + "k_" + to_string(i) +
-                          "/ -randrepeat=0";
+                fio_cmd = "fio -name=" + name + " -size=" + fsize +
+                          "G -runtime=" + runtime + "s -time_base -bs=" + bs +
+                          "k -direct=" + direct + " -rw=" + rw +
+                          " -ioengine=" + ioengine + " -numjobs=" + numjob +
+                          " -group_reporting -iodepth=" + iodepth + " -" +
+                          dorf + to_string(i) + " -randrepeat=0";
                 // 输出本次运行的命令以便排障
-                cout << i << "本次运行的命令是：" << fio_cmd << endl;
+                cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
                 run_cmd(fio_cmd);
                 format(i);
                 // 重置数据
@@ -335,8 +295,48 @@ void fio_seq() {
               }
               fio_sum(name);
               rm_file();
+              runReport();
             }
-            runReport();
+          }
+        }
+      }
+    } else if (dorf.find("directory") != string::npos) {
+      // numjobs=8/16
+      string numjobs[] = {"8", "16"}; // 用数组配置numjobs
+      for (string numjob : numjobs) {
+        // bs=4k
+        string bs_group[] = {"128", "256", "512", "1024"}; // 用数组配置bs块大小
+        for (string bs : bs_group) {
+          string iodepth_group[] = {"1", "2", "8", "16",
+                                    "32"}; // 用数组配置iodepth循环
+          // iodepth=1/2/8/16/32
+          for (string iodepth : iodepth_group) {
+            // 先写后读
+            string rw_group[] = {"write", "read"};
+            for (string rw : rw_group) {
+              // 重复运行3次
+              name = "seq_" + rw + "_" + dorf + "_numjobs=" + numjob +
+                     "_iodepth=" + iodepth + "_bs=" + bs + "k";
+              for (int i = 1; i <= 3; i++) {
+                // 构建文件夹fio命令
+                fio_cmd = "fio -name=" + name + " -size=" + fsize +
+                          "G -runtime=" + runtime + "s -time_base -bs=" + bs +
+                          "k -direct=" + direct + " -rw=" + rw +
+                          " -ioengine=" + ioengine + " -numjobs=" + numjob +
+                          " -group_reporting -iodepth=" + iodepth + " -" +
+                          dorf + " -randrepeat=0";
+                // 输出本次运行的命令以便排障
+                cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
+                run_cmd(fio_cmd);
+                format(i);
+                // 重置数据
+                bw_int.clear();
+                iops_int.clear();
+              }
+              fio_sum(name);
+              rm_file();
+              runReport();
+            }
           }
         }
       }
@@ -347,7 +347,6 @@ void fio_seq() {
 
 // --- 随机写和读开始 ---
 void fio_rand() {
-
   // 文件
   cout << "随机写和读测试，共计30项，每项3次，每次" + runtime + "秒，共计" +
               to_string(stoi(runtime) * 30 * 3) + "秒，约" +
@@ -357,76 +356,32 @@ void fio_rand() {
   string DorF[] = {"filename=" + dir, "directory=" + dir};
   for (string dorf : DorF) {
     if (dorf.find("file") != string::npos) { // 如果是单文件
-      // numjobs=1
-      int bs_group[] = {4};
-      // bs=4k
-      for (int bs : bs_group) {
-        int iodepth_group[] = {1, 2, 8, 16, 32};
-        // iodepth=1/2/8/16/32
-        for (int iodepth : iodepth_group) {
-          for (int i = 1; i < 3; i++) { // 重复运行3次
+                                             // numjobs=8/16
+      string numjobs[] = {"1"};              // 用数组配置numjobs
+      for (string numjob : numjobs) {
+        // bs=4k
+        string bs_group[] = {"4"}; // 用数组配置bs块大小
+        for (string bs : bs_group) {
+          string iodepth_group[] = {"1", "2", "8", "16",
+                                    "32"}; // 用数组配置iodepth循环
+          // iodepth=1/2/8/16/32
+          for (string iodepth : iodepth_group) {
             // 先写后读
             string rw_group[] = {"randwrite", "randread"};
             for (string rw : rw_group) {
-              // 生成名称
-              name = "seq_" + rw +
-                     "_filename_numjobs=1_iodepth=" + to_string(iodepth) +
-                     "_bs=" + to_string(bs) + "k";
-              // 构建单文件fio命令
-              fio_cmd = "fio -name=" + name + " -size=" + fsize +
-                        "G -runtime=" + runtime +
-                        "s -time_base -bs=" + to_string(bs) + "k" +
-                        +" -direct=" + direct + " -rw=" + rw +
-                        " -ioengine=" + ioengine + " -numjobs=1" +
-                        " -group_reporting -iodepth=" + to_string(iodepth) +
-                        " -" + dorf + to_string(iodepth) + "_" + to_string(bs) +
-                        "k/" + to_string(i) + " -randrepeat=0";
-              // 输出本次运行的命令以便排障
-              cout << i << "次运行的命令是：" << fio_cmd << endl;
-              run_cmd(fio_cmd);
-              format(i);
-              // 重置数据
-              bw_int.clear();
-              iops_int.clear();
-            }
-            fio_sum(name);
-            rm_file();
-          }
-          runReport();
-        }
-      }
-    } else if (dorf.find("directory") != string::npos) {
-      // numjobs=8/16
-      int numjobs[] = {8, 16}; // 用数组配置numjobs
-      for (int numjob : numjobs) {
-        // bs=4k
-        int bs_group[] = {4}; // 用数组配置bs块大小
-        for (int bs : bs_group) {
-          int iodepth_group[] = {1, 2, 8, 16, 32}; // 用数组配置iodepth循环
-          // iodepth=1/2/8/16/32
-          for (int iodepth : iodepth_group) {
-            // 重复运行3次
-            for (int i = 1; i <= 3; i++) {
-              // 先写后读
-              string rw_group[] = {"randwrite", "randread"};
-              for (string rw : rw_group) {
-                name = "seq_" + rw + "_directory_numjobs=" + to_string(numjob) +
-                       "_iodepth=" + to_string(iodepth) +
-                       "_bs=" + to_string(bs) + "k";
+              // 重复运行3次
+              name = "seq_" + rw + "_" + dorf + "_numjobs=" + numjob +
+                     "_iodepth=" + iodepth + "_bs=" + bs + "k";
+              for (int i = 1; i <= 3; i++) {
                 // 构建文件夹fio命令
-                fio_cmd = "mkdir -p " + dir + to_string(iodepth) + "_" +
-                          to_string(bs) + "k_" + to_string(i) +
-                          "/&&fio -name=" + name + " -size=" + fsize +
-                          "G -runtime=" + runtime +
-                          "s -time_base -bs=1m -direct=" + direct +
-                          " -rw=" + rw + " -ioengine=" + ioengine +
-                          " -numjobs=" + to_string(numjob) +
-                          " -group_reporting -iodepth=" + to_string(iodepth) +
-                          " -" + dorf + to_string(iodepth) + "_" +
-                          to_string(bs) + "k_" + to_string(i) +
-                          "/ -randrepeat=0";
+                fio_cmd = "fio -name=" + name + " -size=" + fsize +
+                          "G -runtime=" + runtime + "s -time_base -bs=" + bs +
+                          "k -direct=" + direct + " -rw=" + rw +
+                          " -ioengine=" + ioengine + " -numjobs=" + numjob +
+                          " -group_reporting -iodepth=" + iodepth + " -" +
+                          dorf + to_string(i) + " -randrepeat=0";
                 // 输出本次运行的命令以便排障
-                cout << i << "本次运行的命令是：" << fio_cmd << endl;
+                cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
                 run_cmd(fio_cmd);
                 format(i);
                 // 重置数据
@@ -435,8 +390,48 @@ void fio_rand() {
               }
               fio_sum(name);
               rm_file();
+              runReport();
             }
-            runReport();
+          }
+        }
+      }
+    } else if (dorf.find("directory") != string::npos) {
+      // numjobs=8/16
+      string numjobs[] = {"8", "16"}; // 用数组配置numjobs
+      for (string numjob : numjobs) {
+        // bs=4k
+        string bs_group[] = {"4"}; // 用数组配置bs块大小
+        for (string bs : bs_group) {
+          string iodepth_group[] = {"1", "2", "8", "16",
+                                    "32"}; // 用数组配置iodepth循环
+          // iodepth=1/2/8/16/32
+          for (string iodepth : iodepth_group) {
+            // 先写后读
+            string rw_group[] = {"randwrite", "randread"};
+            for (string rw : rw_group) {
+              // 重复运行3次
+              name = "seq_" + rw + "_" + dorf + "_numjobs=" + numjob +
+                     "_iodepth=" + iodepth + "_bs=" + bs + "k";
+              for (int i = 1; i <= 3; i++) {
+                // 构建文件夹fio命令
+                fio_cmd = "fio -name=" + name + " -size=" + fsize +
+                          "G -runtime=" + runtime + "s -time_base -bs=" + bs +
+                          "k -direct=" + direct + " -rw=" + rw +
+                          " -ioengine=" + ioengine + " -numjobs=" + numjob +
+                          " -group_reporting -iodepth=" + iodepth + " -" +
+                          dorf + " -randrepeat=0";
+                // 输出本次运行的命令以便排障
+                cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
+                run_cmd(fio_cmd);
+                format(i);
+                // 重置数据
+                bw_int.clear();
+                iops_int.clear();
+              }
+              fio_sum(name);
+              rm_file();
+              runReport();
+            }
           }
         }
       }
@@ -445,7 +440,7 @@ void fio_rand() {
 }
 // --- 随机写和读结束 ---
 
-// --- 随机读写开始 ---
+// --- 4k随机读写开始 ---
 void fio_randrw() {
 
   // 文件
@@ -457,76 +452,32 @@ void fio_randrw() {
   string DorF[] = {"filename=" + dir, "directory=" + dir};
   for (string dorf : DorF) {
     if (dorf.find("file") != string::npos) { // 如果是单文件
-      // numjobs=1
-      int bs_group[] = {4};
-      // bs=4k
-      for (int bs : bs_group) {
-        int iodepth_group[] = {1, 2, 8, 16, 32};
-        // iodepth=1/2/8/16/32
-        for (int iodepth : iodepth_group) {
-          for (int i = 1; i <= 3; i++) { // 重复运行3次
+                                             // numjobs=8/16
+      string numjobs[] = {"8", "16"};        // 用数组配置numjobs
+      for (string numjob : numjobs) {
+        // bs=4k
+        string bs_group[] = {"4"}; // 用数组配置bs块大小
+        for (string bs : bs_group) {
+          string iodepth_group[] = {"1", "2", "8", "16",
+                                    "32"}; // 用数组配置iodepth循环
+          // iodepth=1/2/8/16/32
+          for (string iodepth : iodepth_group) {
             // 先写后读
             string rw_group[] = {"randrw"};
             for (string rw : rw_group) {
-              // 生成名称
-              name = "seq_" + rw +
-                     "_filename_numjobs=1_iodepth=" + to_string(iodepth) +
-                     "_bs=" + to_string(bs) + "k";
-              // 构建单文件fio命令
-              fio_cmd = "fio -name=" + name + " -size=" + fsize +
-                        "G -runtime=" + runtime +
-                        "s -time_base -bs=" + to_string(bs) + "k" +
-                        +" -direct=" + direct + " -rw=" + rw +
-                        " -ioengine=" + ioengine + " -numjobs=1" +
-                        " -group_reporting -iodepth=" + to_string(iodepth) +
-                        " -" + dorf + to_string(iodepth) + "_" + to_string(bs) +
-                        "k/" + to_string(i) + " -randrepeat=0";
-              // 输出本次运行的命令以便排障
-              cout << i << "次运行的命令是：" << fio_cmd << endl;
-              run_cmd(fio_cmd);
-              format(i);
-              // 重置数据
-              bw_int.clear();
-              iops_int.clear();
-            }
-            fio_sum(name);
-            rm_file();
-          }
-          runReport();
-        }
-      }
-    } else if (dorf.find("directory") != string::npos) {
-      // numjobs=8/16
-      int numjobs[] = {8, 16}; // 用数组配置numjobs
-      for (int numjob : numjobs) {
-        // bs=4k
-        int bs_group[] = {4}; // 用数组配置bs块大小
-        for (int bs : bs_group) {
-          int iodepth_group[] = {1, 2, 8, 16, 32}; // 用数组配置iodepth循环
-          // iodepth=1/2/8/16/32
-          for (int iodepth : iodepth_group) {
-            // 重复运行3次
-            for (int i = 1; i <= 3; i++) {
-              // 先写后读
-              string rw_group[] = {"randrw"};
-              for (string rw : rw_group) {
-                name = "seq_" + rw + "_directory_numjobs=" + to_string(numjob) +
-                       "_iodepth=" + to_string(iodepth) +
-                       "_bs=" + to_string(bs) + "k";
+              // 重复运行3次
+              name = "seq_" + rw + "_" + dorf + "_numjobs=" + numjob +
+                     "_iodepth=" + iodepth + "_bs=" + bs + "k";
+              for (int i = 1; i <= 3; i++) {
                 // 构建文件夹fio命令
-                fio_cmd = "mkdir -p " + dir + to_string(iodepth) + "_" +
-                          to_string(bs) + "k_" + to_string(i) +
-                          "/&&fio -name=" + name + " -size=" + fsize +
-                          "G -runtime=" + runtime +
-                          "s -time_base -bs=1m -direct=" + direct +
-                          " -rw=" + rw + " -ioengine=" + ioengine +
-                          " -numjobs=" + to_string(numjob) +
-                          " -group_reporting -iodepth=" + to_string(iodepth) +
-                          " -" + dorf + to_string(iodepth) + "_" +
-                          to_string(bs) + "k_" + to_string(i) +
-                          "/ -randrepeat=0";
+                fio_cmd = "fio -name=" + name + " -size=" + fsize +
+                          "G -runtime=" + runtime + "s -time_base -bs=" + bs +
+                          "k -direct=" + direct + " -rw=" + rw +
+                          " -ioengine=" + ioengine + " -numjobs=" + numjob +
+                          " -group_reporting -iodepth=" + iodepth + " -" +
+                          dorf + to_string(i) + " -randrepeat=0";
                 // 输出本次运行的命令以便排障
-                cout << i << "本次运行的命令是：" << fio_cmd << endl;
+                cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
                 run_cmd(fio_cmd);
                 format(i);
                 // 重置数据
@@ -535,12 +486,52 @@ void fio_randrw() {
               }
               fio_sum(name);
               rm_file();
+              runReport();
             }
-            runReport();
+          }
+        }
+      }
+    } else if (dorf.find("directory") != string::npos) {
+      // numjobs=8/16
+      string numjobs[] = {"8", "16"}; // 用数组配置numjobs
+      for (string numjob : numjobs) {
+        // bs=4k
+        string bs_group[] = {"4"}; // 用数组配置bs块大小
+        for (string bs : bs_group) {
+          string iodepth_group[] = {"1", "2", "8", "16",
+                                    "32"}; // 用数组配置iodepth循环
+          // iodepth=1/2/8/16/32
+          for (string iodepth : iodepth_group) {
+            // 先写后读
+            string rw_group[] = {"randrw"};
+            for (string rw : rw_group) {
+              // 重复运行3次
+              name = "seq_" + rw + "_" + dorf + "_numjobs=" + numjob +
+                     "_iodepth=" + iodepth + "_bs=" + bs + "k";
+              for (int i = 1; i <= 3; i++) {
+                // 构建文件夹fio命令
+                fio_cmd = "fio -name=" + name + " -size=" + fsize +
+                          "G -runtime=" + runtime + "s -time_base -bs=" + bs +
+                          "k -direct=" + direct + " -rw=" + rw +
+                          " -ioengine=" + ioengine + " -numjobs=" + numjob +
+                          " -group_reporting -iodepth=" + iodepth + " -" +
+                          dorf + " -randrepeat=0";
+                // 输出本次运行的命令以便排障
+                cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
+                run_cmd(fio_cmd);
+                format(i);
+                // 重置数据
+                bw_int.clear();
+                iops_int.clear();
+              }
+              fio_sum(name);
+              rm_file();
+              runReport();
+            }
           }
         }
       }
     }
   }
 }
-// --- 随机写和读结束 ---
+// --- 4k随机读写结束 ---

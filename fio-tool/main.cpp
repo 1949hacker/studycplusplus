@@ -89,7 +89,9 @@ int main() {
   streambuf *originalCoutBuf = cout.rdbuf(&teeBuf);
 
   cout << "欢迎使用fio测试工具\n日志和输出的fio."
-          "csv默认保存到/var/log/fio_tool/\n请<按键>"
+          "csv默认保存到/var/log/fio_tool/"
+          "\n日志不会自行清除，运行前请自行清理日志文件和检查是否残留有测试文件"
+          "\n输出的数据统一为KiB/s单位，iops无单位\n请<按键>"
           "选择你的测试内容：\n"
        << "1. 顺序写和读测试\n"
        << "2. 随机写和读测试\n"

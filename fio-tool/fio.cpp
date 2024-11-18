@@ -257,6 +257,8 @@ void init_read() {
   cin >> fsize;
   cout << "io引擎，Linux（NAS）输入libaio，ioengine=";
   cin >> ioengine;
+  cout << "测试路径（完整输入，带/结尾，如/mnt/iotest/）：";
+  cin >> dir;
   cout << "正在为读取测试创建预读文件，请稍后..."
           "\n创建完毕后会出现提示，创建的文件数量为最大numjobs数量：16个，每个"
           "大小为" +
@@ -264,7 +266,7 @@ void init_read() {
        << endl;
   fio_cmd = "fio -name=init_read -size=" + fsize +
             "G -bs=1m -direct=1 -rw=write -ioengine=" + ioengine +
-            " -numjobs=16 -group_reporting -iodepth=1 -directory=/mnt/";
+            " -numjobs=16 -group_reporting -iodepth=1 -directory=" + dir;
   run_cmd(fio_cmd);
   cout << "预读文件创建完毕！！！\n预读文件创建完毕！！！\n预读文件创建完毕！！"
           "！\n"

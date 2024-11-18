@@ -617,7 +617,7 @@ void fio_rand_write() {
           // iodepth=1/2/8/16/32
           for (string iodepth : iodepth_group) {
             // 先写后读
-            string rw = "randwrite ";
+            string rw = "randwrite";
             // 重复运行3次
             name = rw + "_" + dorf + "_numjobs=" + numjob +
                    "_iodepth=" + iodepth + "_bs=" + bs + "k";

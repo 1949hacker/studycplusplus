@@ -106,19 +106,16 @@ int main() {
       setConfig();
       fio_seq();
       rm_file();
-      runReport();
       break;
     case '2':
       setConfig();
       fio_rand();
       rm_file();
-      runReport();
       break;
     case '3':
       setConfig();
       fio_randrw();
       rm_file();
-      runReport();
       break;
     case 'q':
       cout << "程序已退出。" << endl;

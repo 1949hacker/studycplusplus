@@ -288,6 +288,7 @@ void fio_seq() {
                 iops_int.clear();
               }
               fio_sum(name);
+              runReport();
               rm_file();
             }
           }
@@ -331,6 +332,7 @@ void fio_seq() {
                   iops_int.clear();
                 }
                 fio_sum(name);
+                runReport();
                 rm_file();
               }
             }
@@ -389,6 +391,7 @@ void fio_rand() {
                 iops_int.clear();
               }
               fio_sum(name);
+              runReport();
               rm_file();
             }
           }
@@ -431,6 +434,7 @@ void fio_rand() {
                   iops_int.clear();
                 }
                 fio_sum(name);
+                runReport();
                 rm_file();
               }
             }
@@ -492,6 +496,7 @@ void fio_randrw() {
                 iops_int.clear();
               }
               fio_sum(name);
+              runReport();
               rm_file();
             }
           }
@@ -534,6 +539,7 @@ void fio_randrw() {
                   iops_int.clear();
                 }
                 fio_sum(name);
+                runReport();
                 rm_file();
               }
             }

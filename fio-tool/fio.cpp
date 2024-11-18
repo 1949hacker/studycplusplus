@@ -286,7 +286,7 @@ void fio_seq_write() {
        << endl;
 
   // 文件/文件夹
-  string DorF[] = {"filename=" + dir, "directory=" + dir};
+  string DorF[] = {"filename", "directory"};
   for (string dorf : DorF) {
     if (dorf.find("file") != string::npos) { // 如果是单文件
 
@@ -312,7 +312,7 @@ void fio_seq_write() {
                         "k -direct=" + direct + " -rw=" + rw +
                         " -ioengine=" + ioengine + " -numjobs=" + numjob +
                         " -group_reporting -iodepth=" + iodepth + " -" + dorf +
-                        to_string(i);
+                        "=" + dir + to_string(i);
               // 输出本次运行的命令以便排障
               cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
               run_cmd(fio_cmd);
@@ -320,7 +320,7 @@ void fio_seq_write() {
               // 重置数据
               bw_int.clear();
               iops_int.clear();
-              rm_file(to_string(i));
+              rm_file(to_string(i)); //"rm -rf " + dir + ? rm -rf /mnt/?
             }
             fio_sum(name);
           }
@@ -350,7 +350,7 @@ void fio_seq_write() {
                         "k -direct=" + direct + " -rw=" + rw +
                         " -ioengine=" + ioengine + " -numjobs=" + numjob +
                         " -group_reporting -iodepth=" + iodepth + " -" + dorf +
-                        "dir_" + to_string(i) + "/";
+                        "=" + dir + "dir_" + to_string(i) + "/";
               // 输出本次运行的命令以便排障
               cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
               run_cmd(fio_cmd);
@@ -560,13 +560,12 @@ void fio_rand_read() {
 
 // --- 随机写开始 ---
 void fio_rand_write() {
-  // 文件
   cout << "随机写测试，共计15项，每项3次，每次" + runtime + "秒，共计" +
               to_string(stoi(runtime) * 30 * 3) + "秒，约" +
               to_string(stoi(runtime) * 30 * 3 / 60 / 60) + "小时\n进行中..."
        << endl;
   // 文件/文件夹
-  string DorF[] = {"filename=" + dir, "directory=" + dir};
+  string DorF[] = {"filename", "directory"};
   for (string dorf : DorF) {
     if (dorf.find("file") != string::npos) { // 如果是单文件
                                              // numjobs=8/16
@@ -591,7 +590,7 @@ void fio_rand_write() {
                         "k -direct=" + direct + " -rw=" + rw +
                         " -ioengine=" + ioengine + " -numjobs=" + numjob +
                         " -group_reporting -iodepth=" + iodepth + " -" + dorf +
-                        to_string(i);
+                        "=" + dir + to_string(i);
               // 输出本次运行的命令以便排障
               cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
               run_cmd(fio_cmd);
@@ -630,7 +629,7 @@ void fio_rand_write() {
                         "k -direct=" + direct + " -rw=" + rw +
                         " -ioengine=" + ioengine + " -numjobs=" + numjob +
                         " -group_reporting -iodepth=" + iodepth + " -" + dorf +
-                        "dir_" + to_string(i) + "/";
+                        "=" + dir + "dir_" + to_string(i) + "/";
               // 输出本次运行的命令以便排障
               cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
               run_cmd(fio_cmd);

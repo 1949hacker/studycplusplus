@@ -93,9 +93,19 @@ int main() {
           "\n日志不会自行清除，运行前请自行清理日志文件和检查是否残留有测试文件"
           "\n输出的数据统一为KiB/s单位，iops无单位\n请<按键>"
           "选择你的测试内容：\n"
-       << "1. 顺序写和读测试\n"
-       << "2. 随机写和读测试\n"
-       << "3. 4k随机50%混合读写测试\n"
+       << "1. 顺序写测试\n"
+       << "2. 随机写测试\n"
+       << "-------分割线-------\n"
+       << "进行读测试之前需要先创建预读文件，固定为测试路径下的init_read.[0-15]"
+       << ".0共16个文件\n"
+       << "请自行根据测试情况判断是否需要重新生成，如需重新生成，请删除后按<r>"
+       << "进行预读文件创建\n"
+       << "如无需创建预读文件则直接按键开始测试即可！\n\n"
+       << "测试完成后记得清理干净测试残留的文件和日志文件\n"
+       << "-------分割线-------\n"
+       << "3. 顺序读测试\n"
+       << "4. 随机读测试\n"
+       << "5. 4k随机50%混合读写测试\n"
        << "q. 退出程序\n"
        << "s. 你想骚一下？" << endl;
 
@@ -107,19 +117,26 @@ int main() {
     switch (choice) {
     case '1':
       setConfig();
-      fio_seq();
-      rm_file();
-      break;
+      fio_seq_write();
+      return 1;
     case '2':
       setConfig();
-      fio_rand();
-      rm_file();
-      break;
+      fio_rand_write();
+      return 1;
     case '3':
       setConfig();
+      fio_seq_read();
+      return 1;
+    case '4':
+      setConfig();
+      fio_rand_read();
+      return 1;
+    case '5':
+      setConfig();
       fio_randrw();
-      rm_file();
-      break;
+      return 1;
+    case 'r':
+      init_read();
     case 'q':
       cout << "程序已退出。" << endl;
       return 0;

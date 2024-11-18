@@ -302,7 +302,7 @@ void fio_seq_write() {
           for (string iodepth : iodepth_group) {
             // 先写后读
             string rw = "write";
-            name = "seq_" + rw + "_" + dorf + "_numjobs=" + numjob +
+            name = rw + "_" + dorf + "_numjobs=" + numjob +
                    "_iodepth=" + iodepth + "_bs=" + bs + "k";
             // 重复运行3次
             for (int i = 1; i <= 3; i++) {
@@ -338,10 +338,9 @@ void fio_seq_write() {
                                     "32"}; // 用数组配置iodepth循环
           // iodepth=1/2/8/16/32
           for (string iodepth : iodepth_group) {
-            // 先写后读
             string rw = "write";
             // 重复运行3次
-            name = "seq_" + rw + "_" + dorf + "_numjobs=" + numjob +
+            name = rw + "_" + dorf + "_numjobs=" + numjob +
                    "_iodepth=" + iodepth + "_bs=" + bs + "k";
             for (int i = 1; i <= 3; i++) {
               // 构建文件夹fio命令
@@ -396,7 +395,7 @@ void fio_seq_read() {
           // iodepth=1/2/8/16/32
           for (string iodepth : iodepth_group) {
             string rw = "read";
-            name = "seq_" + rw + "_" + dorf + "_numjobs=" + numjob +
+            name = rw + "_" + dorf + "_numjobs=" + numjob +
                    "_iodepth=" + iodepth + "_bs=" + bs + "k";
             // 重复运行3次
             for (int i = 1; i <= 3; i++) {
@@ -436,7 +435,7 @@ void fio_seq_read() {
             // 先写后读
             string rw = "read";
             // 重复运行3次
-            name = "seq_" + rw + "_" + dorf + "_numjobs=" + numjob +
+            name = rw + "_" + dorf + "_numjobs=" + numjob +
                    "_iodepth=" + iodepth + "_bs=" + bs + "k";
             for (int i = 1; i <= 3; i++) {
               // 构建文件夹fio命令
@@ -489,7 +488,7 @@ void fio_rand_read() {
           // iodepth=1/2/8/16/32
           for (string iodepth : iodepth_group) {
             string rw = "randread";
-            name = "seq_" + rw + "_" + dorf + "_numjobs=" + numjob +
+            name = rw + "_" + dorf + "_numjobs=" + numjob +
                    "_iodepth=" + iodepth + "_bs=" + bs + "k";
             // 重复运行3次
             for (int i = 1; i <= 3; i++) {
@@ -529,7 +528,7 @@ void fio_rand_read() {
             // 先写后读
             string rw = "randread";
             // 重复运行3次
-            name = "seq_" + rw + "_" + dorf + "_numjobs=" + numjob +
+            name = rw + "_" + dorf + "_numjobs=" + numjob +
                    "_iodepth=" + iodepth + "_bs=" + bs + "k";
             for (int i = 1; i <= 3; i++) {
               // 构建文件夹fio命令
@@ -583,7 +582,7 @@ void fio_rand_write() {
             // 先写后读
             string rw = "randwrite";
             // 重复运行3次
-            name = "seq_" + rw + "_" + dorf + "_numjobs=" + numjob +
+            name = rw + "_" + dorf + "_numjobs=" + numjob +
                    "_iodepth=" + iodepth + "_bs=" + bs + "k";
             for (int i = 1; i <= 3; i++) {
               // 构建文件夹fio命令
@@ -621,7 +620,7 @@ void fio_rand_write() {
             // 先写后读
             string rw = "randwrite ";
             // 重复运行3次
-            name = "seq_" + rw + "_" + dorf + "_numjobs=" + numjob +
+            name = rw + "_" + dorf + "_numjobs=" + numjob +
                    "_iodepth=" + iodepth + "_bs=" + bs + "k";
             for (int i = 1; i <= 3; i++) {
               // 构建文件夹fio命令
@@ -676,7 +675,7 @@ void fio_randrw() {
             // 先写后读
             string rw = "randrw";
             // 重复运行3次
-            name = "seq_" + rw + "_" + dorf + "_numjobs=" + numjob +
+            name = rw + "_" + dorf + "_numjobs=" + numjob +
                    "_iodepth=" + iodepth + "_bs=" + bs + "k";
             for (int i = 1; i <= 3; i++) {
               // 构建文件夹fio命令
@@ -715,7 +714,7 @@ void fio_randrw() {
             // 先写后读
             string rw = "randrw";
             // 重复运行3次
-            name = "seq_" + rw + "_" + dorf + "_numjobs=" + numjob +
+            name = rw + "_" + dorf + "_numjobs=" + numjob +
                    "_iodepth=" + iodepth + "_bs=" + bs + "k";
             for (int i = 1; i <= 3; i++) {
               // 构建文件夹fio命令

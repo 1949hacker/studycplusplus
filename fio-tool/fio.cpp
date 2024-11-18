@@ -324,7 +324,7 @@ void fio_seq() {
                           "k -direct=" + direct + " -rw=" + rw +
                           " -ioengine=" + ioengine + " -numjobs=" + numjob +
                           " -group_reporting -iodepth=" + iodepth + " -" +
-                          dorf + " -randrepeat=0";
+                          dorf + to_string(i) + "/ -randrepeat=0";
                 // 输出本次运行的命令以便排障
                 cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
                 run_cmd(fio_cmd);
@@ -419,7 +419,7 @@ void fio_rand() {
                           "k -direct=" + direct + " -rw=" + rw +
                           " -ioengine=" + ioengine + " -numjobs=" + numjob +
                           " -group_reporting -iodepth=" + iodepth + " -" +
-                          dorf + " -randrepeat=0";
+                          dorf + to_string(i) + "/ -randrepeat=0";
                 // 输出本次运行的命令以便排障
                 cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
                 run_cmd(fio_cmd);
@@ -515,7 +515,7 @@ void fio_randrw() {
                           "k -direct=" + direct + " -rw=" + rw +
                           " -ioengine=" + ioengine + " -numjobs=" + numjob +
                           " -group_reporting -iodepth=" + iodepth + " -" +
-                          dorf + " -randrepeat=0";
+                          dorf + to_string(i) + "/ -randrepeat=0";
                 // 输出本次运行的命令以便排障
                 cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
                 run_cmd(fio_cmd);

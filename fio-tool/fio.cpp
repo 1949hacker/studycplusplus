@@ -250,6 +250,10 @@ void runReport() {
 
 // ---创建预读文件 start---
 void init_read() {
+  cout << "设置预读文件大小，需略大于内存，单位为G，直接输入数字即可：";
+  cin >> fsize;
+  cout << "io引擎，Linux（NAS）输入libaio，ioengine=";
+  cin >> ioengine;
   cout << "正在为读取测试创建预读文件，请稍后..."
           "\n创建完毕后会出现提示，创建的文件数量为最大numjobs数量：16个，每个"
           "大小为" +
@@ -257,7 +261,7 @@ void init_read() {
        << endl;
   fio_cmd = "fio -name=init_read -size=" + fsize +
             "G -bs=1m -direct=1 -rw=write -ioengine=" + ioengine +
-            " -numjobs=16 -group_reporting -iodepth=1 -directory=" + dir + "/";
+            " -numjobs=16 -group_reporting -iodepth=1 -directory=/mnt/";
   run_cmd(fio_cmd);
   cout << "预读文件创建完毕！！！\n预读文件创建完毕！！！\n预读文件创建完毕！！"
           "！\n"
@@ -278,7 +282,8 @@ void fio_seq_write() {
   string DorF[] = {"filename=" + dir, "directory=" + dir};
   for (string dorf : DorF) {
     if (dorf.find("file") != string::npos) { // 如果是单文件
-                                             // numjobs=8/16
+    
+                                             // numjobs=1
       string numjobs[] = {"1"};              // 用数组配置numjobs
       for (string numjob : numjobs) {
         // bs=4k

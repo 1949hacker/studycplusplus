@@ -36,7 +36,7 @@ void setConfig() {
 
 // 删除测试文件
 void rm_file(string name) {
-  string rm_command = "rm -rf " + dir + "/" + name + "*";
+  string rm_command = "rm -rf " + dir + name;
   system(rm_command.c_str()); // 删除 /iopsTest 目录下的所有文件
   cout << "临时文件已删除" << endl;
 }
@@ -60,7 +60,7 @@ void run_cmd(const string &cmd) {
   fclose(fp);
 
   // DEBUG:显示fio的输出内容
-  //   cout << fio_output.str();
+  // cout << fio_output.str();
 }
 
 // 分析fio输出
@@ -72,7 +72,7 @@ void format(const int &i) {
     if (line.find("samples") != string::npos) {
       cout << "筛选成功，原始数据：" << line << endl;
       if (line.find("bw ") != string::npos) {
-        if (line.find("MiB") != string::npos) {
+        if (line.find("MiB/s") != string::npos) {
           cout << "检测到单位MiB/s，将转换为KiB/s" << endl;
           // 提取带宽数字
           regex bw_regex(R"(\d+\.\d+|\d+)");
@@ -85,7 +85,7 @@ void format(const int &i) {
             bw_num.push_back(to_string(bw_value_bytes));
             line = match.suffix();
           }
-        } else if (line.find("KiB") != string::npos) {
+        } else if (line.find("KiB/s") != string::npos) {
           cout << "检测到单位KiB/s，直接提取" << endl;
           // 提取带宽数字
           regex bw_regex(R"(\d+\.\d+|\d+)");
@@ -117,10 +117,13 @@ void format(const int &i) {
 
   // DEBUG: 检查原始数据是否正常
   // for (int a : bw_int) {
-  //   cout << a << endl;
+  //   cout << "bw:" << a << endl;
+  // }
+  // for (int a : iops_int) {
+  //   cout << "iops:" << a << endl;
   // }
 
-  if (bw_int[6] != 0) {
+  if (bw_int.size() > 7) {
     // 混合读写
     cout << name << " | 第" << i << "次带宽运行<读>结果:"
          << "min:" << bw_int[0] << " max:" << bw_int[1] << " avg:" << bw_int[3]
@@ -271,7 +274,9 @@ void init_read() {
 
 // --- 顺序写start ---
 void fio_seq_write() {
-
+  // 重置数据
+  bw_int.clear();
+  iops_int.clear();
   // 文件
   cout << "顺序写测试，共计100项，每项3次，每次" + runtime + "秒，共计" +
               to_string(stoi(runtime) * 100 * 3) + "秒，约" +
@@ -282,11 +287,11 @@ void fio_seq_write() {
   string DorF[] = {"filename=" + dir, "directory=" + dir};
   for (string dorf : DorF) {
     if (dorf.find("file") != string::npos) { // 如果是单文件
-    
-                                             // numjobs=1
-      string numjobs[] = {"1"};              // 用数组配置numjobs
+
+      // numjobs=1
+      string numjobs[] = {"1"}; // 用数组配置numjobs
       for (string numjob : numjobs) {
-        // bs=4k
+        // bs=512/1024
         string bs_group[] = {"512", "1024"}; // 用数组配置bs块大小
         for (string bs : bs_group) {
           string iodepth_group[] = {"1", "2", "8", "16",
@@ -313,11 +318,11 @@ void fio_seq_write() {
               // 重置数据
               bw_int.clear();
               iops_int.clear();
+              rm_file(to_string(i));
             }
             fio_sum(name);
-            rm_file(name);
-            runReport();
           }
+          runReport();
         }
       }
     } else if (dorf.find("directory") != string::npos) {
@@ -338,12 +343,13 @@ void fio_seq_write() {
                    "_iodepth=" + iodepth + "_bs=" + bs + "k";
             for (int i = 1; i <= 3; i++) {
               // 构建文件夹fio命令
-              fio_cmd = "fio -name=" + name + " -size=" + fsize +
+              fio_cmd = "mkdir -p " + dir + "dir_" + to_string(i) + "/" +
+                        " && fio -name=" + name + " -size=" + fsize +
                         "G -runtime=" + runtime + "s -time_base -bs=" + bs +
                         "k -direct=" + direct + " -rw=" + rw +
                         " -ioengine=" + ioengine + " -numjobs=" + numjob +
                         " -group_reporting -iodepth=" + iodepth + " -" + dorf +
-                        to_string(i) + "/";
+                        "dir_" + to_string(i) + "/";
               // 输出本次运行的命令以便排障
               cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
               run_cmd(fio_cmd);
@@ -351,11 +357,11 @@ void fio_seq_write() {
               // 重置数据
               bw_int.clear();
               iops_int.clear();
+              rm_file("dir_" + to_string(i));
             }
             fio_sum(name);
-            rm_file(name);
-            runReport();
           }
+          runReport();
         }
       }
     }
@@ -410,8 +416,8 @@ void fio_seq_read() {
               iops_int.clear();
             }
             fio_sum(name);
-            runReport();
           }
+          runReport();
         }
       }
     } else if (dorf.find("directory") != string::npos) {
@@ -449,8 +455,8 @@ void fio_seq_read() {
               iops_int.clear();
             }
             fio_sum(name);
-            runReport();
           }
+          runReport();
         }
       }
     }
@@ -503,8 +509,8 @@ void fio_rand_read() {
               iops_int.clear();
             }
             fio_sum(name);
-            runReport();
           }
+          runReport();
         }
       }
     } else if (dorf.find("directory") != string::npos) {
@@ -542,8 +548,8 @@ void fio_rand_read() {
               iops_int.clear();
             }
             fio_sum(name);
-            runReport();
           }
+          runReport();
         }
       }
     }
@@ -592,11 +598,11 @@ void fio_rand_write() {
               // 重置数据
               bw_int.clear();
               iops_int.clear();
+              rm_file(to_string(i));
             }
             fio_sum(name);
-            rm_file(name);
-            runReport();
           }
+          runReport();
         }
       }
     } else if (dorf.find("directory") != string::npos) {
@@ -617,12 +623,13 @@ void fio_rand_write() {
                    "_iodepth=" + iodepth + "_bs=" + bs + "k";
             for (int i = 1; i <= 3; i++) {
               // 构建文件夹fio命令
-              fio_cmd = "fio -name=" + name + " -size=" + fsize +
+              fio_cmd = "mkdir -p " + dir + "dir_" + to_string(i) + "/" +
+                        " && fio -name=" + name + " -size=" + fsize +
                         "G -runtime=" + runtime + "s -time_base -bs=" + bs +
                         "k -direct=" + direct + " -rw=" + rw +
                         " -ioengine=" + ioengine + " -numjobs=" + numjob +
                         " -group_reporting -iodepth=" + iodepth + " -" + dorf +
-                        to_string(i) + "/";
+                        "dir_" + to_string(i) + "/";
               // 输出本次运行的命令以便排障
               cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
               run_cmd(fio_cmd);
@@ -630,11 +637,11 @@ void fio_rand_write() {
               // 重置数据
               bw_int.clear();
               iops_int.clear();
+              rm_file("dir_" + to_string(i));
             }
             fio_sum(name);
-            rm_file(name);
-            runReport();
           }
+          runReport();
         }
       }
     }
@@ -688,8 +695,8 @@ void fio_randrw() {
               iops_int.clear();
             }
             fio_sum(name);
-            runReport();
           }
+          runReport();
         }
       }
     } else if (dorf.find("directory") != string::npos) {
@@ -727,8 +734,8 @@ void fio_randrw() {
               iops_int.clear();
             }
             fio_sum(name);
-            runReport();
           }
+          runReport();
         }
       }
     }

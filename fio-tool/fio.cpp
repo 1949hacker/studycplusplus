@@ -280,7 +280,7 @@ void fio_seq_write() {
   bw_int.clear();
   iops_int.clear();
   // 文件
-  cout << "顺序写测试，共计100项，每项3次，每次" + runtime + "秒，共计" +
+  cout << "顺序写测试，共计50项，每项3次，每次" + runtime + "秒，共计" +
               to_string(stoi(runtime) * 100 * 3) + "秒，约" +
               to_string(stoi(runtime) * 100 * 3 / 60 / 60) + "小时\n进行中..."
        << endl;
@@ -374,7 +374,7 @@ void fio_seq_write() {
 void fio_seq_read() {
 
   // 文件
-  cout << "顺序读测试，共计100项，每项3次，每次" + runtime + "秒，共计" +
+  cout << "顺序读测试，共计50项，每项3次，每次" + runtime + "秒，共计" +
               to_string(stoi(runtime) * 200 * 3) + "秒，约" +
               to_string(stoi(runtime) * 200 * 3 / 60 / 60) + "小时\n进行中..."
        << endl;

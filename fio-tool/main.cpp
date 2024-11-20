@@ -107,6 +107,7 @@ int main() {
        << "4. 随机读测试\n"
        << "5. 4k随机50%混合读写测试\n"
        << "r. 创建预读文件\n"
+       << "f. Fullauto全自动测试"
        << "q. 退出程序\n"
        << "s. 你想骚一下？" << endl;
 
@@ -119,25 +120,36 @@ int main() {
     case '1':
       setConfig();
       fio_seq_write();
-      return 1;
+      return 0;
     case '2':
       setConfig();
       fio_rand_write();
-      return 1;
+      return 0;
     case '3':
       setConfig();
       fio_seq_read();
-      return 1;
+      return 0;
     case '4':
       setConfig();
       fio_rand_read();
-      return 1;
+      return 0;
     case '5':
       setConfig();
       fio_randrw();
-      return 1;
+      return 0;
     case 'r':
+      setConfig();
       init_read();
+      return 0;
+    case 'f':
+      setConfig();
+      fio_seq_write();
+      fio_rand_write();
+      init_read();
+      fio_seq_read();
+      fio_rand_read();
+      fio_randrw();
+      return 0;
     case 'q':
       cout << "程序已退出。" << endl;
       return 0;

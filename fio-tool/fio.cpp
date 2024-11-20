@@ -253,12 +253,7 @@ void runReport() {
 
 // ---创建预读文件 start---
 void init_read() {
-  cout << "设置预读文件大小，需略大于内存，单位为G，直接输入数字即可：";
-  cin >> fsize;
-  cout << "io引擎，Linux（NAS）输入libaio，ioengine=";
-  cin >> ioengine;
-  cout << "测试路径（完整输入，带/结尾，如/mnt/iotest/）：";
-  cin >> dir;
+  cout << "预读文件的大小与测试文件一致，自动从之前的测试中获取";
   cout << "正在为读取测试创建预读文件，请稍后..."
           "\n创建完毕后会出现提示，创建的文件数量为最大numjobs数量：16个，每个"
           "大小为" +

@@ -126,14 +126,14 @@ void format(const int &i) {
   if (bw_int.size() > 7) {
     // 混合读写
     cout << name << " | 第" << i << "次带宽运行<读>结果:"
-         << "min:" << bw_int[0] << " max:" << bw_int[1] << " avg:" << bw_int[3]
-         << "\n"
+         << "min:" << bw_int[0] << "KiB/s max:" << bw_int[1]
+         << "KiB/s avg:" << bw_int[3] << "KiB/s\n"
          << name << " | 第" << i << "次次IOPS运行<读>结果:"
          << "min:" << iops_int[0] << " max:" << iops_int[1]
-         << " avg:" << iops_int[3] << endl;
+         << " avg:" << iops_int[2] << endl;
     cout << name << " | 第" << i << "次带宽运行<写>结果:"
-         << "min:" << bw_int[6] << " max:" << bw_int[7] << " avg:" << bw_int[9]
-         << "\n"
+         << "min:" << bw_int[6] << "KiB/s max:" << bw_int[7]
+         << "KiB/s avg:" << bw_int[9] << "KiB/s\n"
          << name << " | 第" << i << "次次IOPS运行<写>结果:"
          << "min:" << iops_int[5] << " max:" << iops_int[6]
          << " avg:" << iops_int[7] << endl;
@@ -152,11 +152,11 @@ void format(const int &i) {
     iops[5] += iops_int[7];
   } else {
     cout << name << " | 第" << i << "次带宽运行结果:"
-         << "min:" << bw_int[0] << " max:" << bw_int[1] << " avg:" << bw_int[3]
-         << "\n"
+         << "min:" << bw_int[0] << "KiB/s max:" << bw_int[1]
+         << "KiB/s avg:" << bw_int[3] << "KiB/s\n"
          << name << " | 第" << i << "次次IOPS运行结果:"
          << "min:" << iops_int[0] << " max:" << iops_int[1]
-         << " avg:" << iops_int[3] << endl;
+         << " avg:" << iops_int[2] << endl;
     // 整理带宽和IOPS数据
     bw[0] += bw_int[0];
     bw[1] += bw_int[1];
@@ -225,11 +225,12 @@ void runReport() {
   if (outputFile.is_open()) {
     // 如果文件为空，先写入表头（假设表头只在文件为空时写入一次）
     if (outputFile.tellp() == 0) {
-      outputFile << "测试类型,带宽最小值,带宽最大值,带宽均值,IOPS最大值,"
-                    "IOPS最小值,IOPS均值,写带宽最小值,写带宽最大值,写带宽均值,"
-                    "写IOPS最大值,"
-                    "写IOPS最小值,写IOPS均值,"
-                 << endl;
+      outputFile
+          << "测试类型,带宽最小值,带宽最大值,带宽均值,IOPS最大值,"
+             "IOPS最小值,IOPS均值,写带宽最小值,写带宽最大值,写带宽均值,"
+             "写IOPS最大值,"
+             "写IOPS最小值,写IOPS均值,(前6列数据在混合读写中作为读的数据)"
+          << endl;
     }
 
     for (const auto &row : run_report) {

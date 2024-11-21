@@ -22,7 +22,7 @@ vector<int> values, bw_int, iops_int;
 
 // 参数设置
 void setConfig() {
-  cout << "测试路径（完整输入，带/结尾，如/mnt/iotest/）：";
+  cout << "\033[36m测试路径（完整输入，带/结尾，如/mnt/iotest/）：";
   cin >> dir;
   cout << "测试文件大小，需要略大于内存大小，仅输入数字单位为G，size=";
   cin >> fsize;
@@ -30,7 +30,7 @@ void setConfig() {
   cin >> runtime;
   cout << "io测试引擎，Linux（NAS）输入libaio，ioengine=";
   cin >> ioengine;
-  cout << "设置是否经过系统缓存，1不缓存，0操作系统缓存，direct=";
+  cout << "设置是否经过系统缓存，1不缓存，0操作系统缓存，direct=\033[0m";
   cin >> direct;
 }
 
@@ -38,7 +38,7 @@ void setConfig() {
 void rm_file(string name) {
   string rm_command = "rm -rf " + dir + name;
   system(rm_command.c_str()); // 删除 /iopsTest 目录下的所有文件
-  cout << "临时文件已删除" << endl;
+  cout << "\033[32m临时文件已删除\033[0m" << endl;
 }
 
 void run_cmd(const string &cmd) {
@@ -48,7 +48,7 @@ void run_cmd(const string &cmd) {
 
   FILE *fp = popen(cmd.c_str(), "r");
   if (fp == nullptr) {
-    cerr << "Error opening pipe!" << endl;
+    cerr << "\033[31mError opening pipe!\033[0m" << endl;
     return;
   }
 
@@ -70,10 +70,10 @@ void format(const int &i) {
 
   while (getline(fio_output, line)) {
     if (line.find("samples") != string::npos) {
-      cout << "筛选成功，原始数据：" << line << endl;
+      cout << "\033[32;1m筛选成功，原始数据：\033[0m" << line << endl;
       if (line.find("bw ") != string::npos) {
         if (line.find("MiB/s") != string::npos) {
-          cout << "检测到单位MiB/s，将转换为KiB/s" << endl;
+          cout << "\033[32;1m检测到单位MiB/s，将转换为KiB/s\033[0m" << endl;
           // 提取带宽数字
           regex bw_regex(R"(\d+\.\d+|\d+)");
           smatch match;
@@ -86,7 +86,7 @@ void format(const int &i) {
             line = match.suffix();
           }
         } else if (line.find("KiB/s") != string::npos) {
-          cout << "检测到单位KiB/s，直接提取" << endl;
+          cout << "\033[32;1m检测到单位KiB/s，直接提取\033[0m" << endl;
           // 提取带宽数字
           regex bw_regex(R"(\d+\.\d+|\d+)");
           smatch match;
@@ -125,7 +125,7 @@ void format(const int &i) {
 
   if (bw_int.size() > 7) {
     // 混合读写
-    cout << name << " | 第" << i << "次带宽运行<读>结果:"
+    cout << "\033[32;1m" << name << " | 第" << i << "次带宽运行<读>结果:"
          << "min:" << bw_int[0] << "KiB/s max:" << bw_int[1]
          << "KiB/s avg:" << bw_int[3] << "KiB/s\n"
          << name << " | 第" << i << "次次IOPS运行<读>结果:"
@@ -136,7 +136,7 @@ void format(const int &i) {
          << "KiB/s avg:" << bw_int[9] << "KiB/s\n"
          << name << " | 第" << i << "次次IOPS运行<写>结果:"
          << "min:" << iops_int[5] << " max:" << iops_int[6]
-         << " avg:" << iops_int[7] << endl;
+         << " avg:" << iops_int[7] << "\033[0m" << endl;
     // 整理带宽和IOPS数据
     bw[0] += bw_int[0];
     bw[1] += bw_int[1];
@@ -151,12 +151,12 @@ void format(const int &i) {
     iops[4] += iops_int[6];
     iops[5] += iops_int[7];
   } else {
-    cout << name << " | 第" << i << "次带宽运行结果:"
+    cout << "\033[32;1m" << name << " | 第" << i << "次带宽运行结果:"
          << "min:" << bw_int[0] << "KiB/s max:" << bw_int[1]
          << "KiB/s avg:" << bw_int[3] << "KiB/s\n"
          << name << " | 第" << i << "次次IOPS运行结果:"
          << "min:" << iops_int[0] << " max:" << iops_int[1]
-         << " avg:" << iops_int[2] << endl;
+         << " avg:" << iops_int[2] << "\033[0m" << endl;
     // 整理带宽和IOPS数据
     bw[0] += bw_int[0];
     bw[1] += bw_int[1];
@@ -243,29 +243,32 @@ void runReport() {
     // 关闭文件
     outputFile.close();
 
-    cout << "数据已成功追加到fio.csv文件。" << endl;
+    cout << "\033[32;1m数据已成功追加到fio.csv文件。\033[0m" << endl;
   } else {
-    cerr << "无法打开fio.csv文件进行追加写入。" << endl;
+    cerr << "\033[31;1m无法打开fio.csv文件进行追加写入。\033[0m" << endl;
   }
-  cout << "已重置run_report" << endl;
+  cout << "\033[32;1m已重置run_report\033[0m" << endl;
   // 重置run_report
   run_report.clear();
 }
 
 // ---创建预读文件 start---
 void init_read() {
-  cout << "预读文件的大小与测试文件一致，自动从之前的测试中获取";
-  cout << "正在为读取测试创建预读文件，请稍后..."
+  cout << "\033[32;1m预读文件的大小与测试文件一致，自动从之前的测试中获取\033["
+          "0m";
+  cout << "\033[31;1m正在为读取测试创建预读文件，请稍后..."
           "\n创建完毕后会出现提示，创建的文件数量为最大numjobs数量：16个，每个"
           "大小为" +
               fsize + "G"
-       << endl;
+       << "\033[0m" << endl;
   fio_cmd = "fio -name=init_read -size=" + fsize +
             "G -bs=1m -direct=1 -rw=write -ioengine=" + ioengine +
             " -numjobs=16 -group_reporting -iodepth=1 -directory=" + dir;
   run_cmd(fio_cmd);
-  cout << "预读文件创建完毕！！！\n预读文件创建完毕！！！\n预读文件创建完毕！！"
-          "！\n"
+  cout << "\033[32;"
+          "1m预读文件创建完毕！！！\n预读文件创建完毕！！！\n预读文件创建完毕！"
+          "！"
+          "！\n\033[0m"
        << endl;
 }
 // ---创建预读文件 end---
@@ -276,10 +279,10 @@ void fio_seq_write() {
   bw_int.clear();
   iops_int.clear();
   // 文件
-  cout << "顺序写测试，共计50项，每项3次，每次" + runtime + "秒，共计" +
-              to_string((stoi(runtime) + 5) * 50 * 3) + "秒，约" +
+  cout << "\033[36;1m顺序写测试，共计50项，每项3次，每次" + runtime +
+              "秒，共计" + to_string((stoi(runtime) + 5) * 50 * 3) + "秒，约" +
               to_string((stoi(runtime) + 5) * 50 * 3 / 60 / 60) +
-              "小时\n进行中..."
+              "小时\n进行中...\033[0m"
        << endl;
 
   // 文件/文件夹
@@ -311,7 +314,8 @@ void fio_seq_write() {
                         " -group_reporting -ramp_time=5 -iodepth=" + iodepth +
                         " -" + dorf + "=" + dir + to_string(i);
               // 输出本次运行的命令以便排障
-              cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
+              cout << "\033[36;1m第" << i << "次运行的命令是：" << fio_cmd
+                   << "\033[0m" << endl;
               run_cmd(fio_cmd);
               format(i);
               // 重置数据
@@ -349,7 +353,8 @@ void fio_seq_write() {
                         " -group_reporting -ramp_time=5 -iodepth=" + iodepth +
                         " -" + dorf + "=" + dir + "dir_" + to_string(i) + "/";
               // 输出本次运行的命令以便排障
-              cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
+              cout << "\033[36;1m第" << i << "次运行的命令是：" << fio_cmd
+                   << "\033[0m" << endl;
               run_cmd(fio_cmd);
               format(i);
               // 重置数据
@@ -371,10 +376,10 @@ void fio_seq_write() {
 void fio_seq_read() {
 
   // 文件
-  cout << "顺序读测试，共计50项，每项3次，每次预热5秒，每次测试" + runtime +
-              "秒，共计" + to_string((stoi(runtime) + 5) * 50 * 3) + "秒，约" +
-              to_string((stoi(runtime) + 5) * 50 * 3 / 60 / 60) +
-              "小时\n进行中..."
+  cout << "\033[36;1m顺序读测试，共计50项，每项3次，每次预热5秒，每次测试" +
+              runtime + "秒，共计" + to_string((stoi(runtime) + 5) * 50 * 3) +
+              "秒，约" + to_string((stoi(runtime) + 5) * 50 * 3 / 60 / 60) +
+              "小时\n进行中...\033[0m"
        << endl;
 
   // 文件/文件夹
@@ -407,7 +412,8 @@ void fio_seq_read() {
                   " -group_reporting -ramp_time=5 -readrepeat=0 -iodepth=" +
                   iodepth + " -" + dorf + "=" + dir + "init_read.0.0";
               // 输出本次运行的命令以便排障
-              cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
+              cout << "\033[36;1m第" << i << "次运行的命令是：" << fio_cmd
+                   << "\033[0m" << endl;
               run_cmd(fio_cmd);
               format(i);
               // 重置数据
@@ -446,7 +452,8 @@ void fio_seq_read() {
                   " -group_reporting -ramp_time=5 -readrepeat=0 -iodepth=" +
                   iodepth + " -" + dorf + "=" + dir;
               // 输出本次运行的命令以便排障
-              cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
+              cout << "\033[36;1m第" << i << "次运行的命令是：" << fio_cmd
+                   << "\033[0m" << endl;
               run_cmd(fio_cmd);
               format(i);
               // 重置数据
@@ -466,10 +473,10 @@ void fio_seq_read() {
 // --- 随机读start ---
 void fio_rand_read() {
   // 文件
-  cout << "随机读测试，共计15项，每项3次，每次预热5秒，每次测试" + runtime +
-              "秒，共计" + to_string((stoi(runtime) + 5) * 15 * 3) + "秒，约" +
-              to_string((stoi(runtime) + 5) * 15 * 3 / 60 / 60) +
-              "小时\n进行中..."
+  cout << "\033[36;1m随机读测试，共计15项，每项3次，每次预热5秒，每次测试" +
+              runtime + "秒，共计" + to_string((stoi(runtime) + 5) * 15 * 3) +
+              "秒，约" + to_string((stoi(runtime) + 5) * 15 * 3 / 60 / 60) +
+              "小时\n进行中...\033[0m"
        << endl;
   // 文件/文件夹
   string DorF[] = {"filename", "directory"};
@@ -501,7 +508,8 @@ void fio_rand_read() {
                   " -group_reporting -ramp_time=5 -readrepeat=0 -iodepth=" +
                   iodepth + " -" + dorf + "=" + dir + "init_read.0.0";
               // 输出本次运行的命令以便排障
-              cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
+              cout << "\033[36;1m第" << i << "次运行的命令是：" << fio_cmd
+                   << "\033[0m" << endl;
               run_cmd(fio_cmd);
               format(i);
               // 重置数据
@@ -540,7 +548,8 @@ void fio_rand_read() {
                   " -group_reporting -ramp_time=5 -readrepeat=0 -iodepth=" +
                   iodepth + " -" + dorf + "=" + dir;
               // 输出本次运行的命令以便排障
-              cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
+              cout << "\033[36;1m第" << i << "次运行的命令是：" << fio_cmd
+                   << "\033[0m" << endl;
               run_cmd(fio_cmd);
               format(i);
               // 重置数据
@@ -559,10 +568,10 @@ void fio_rand_read() {
 
 // --- 随机写开始 ---
 void fio_rand_write() {
-  cout << "随机写测试，共计15项，每项3次，每次预热5秒，每次测试" + runtime +
-              "秒，共计" + to_string((stoi(runtime) + 5) * 15 * 3) + "秒，约" +
-              to_string((stoi(runtime) + 5) * 15 * 3 / 60 / 60) +
-              "小时\n进行中..."
+  cout << "\033[36;1m随机写测试，共计15项，每项3次，每次预热5秒，每次测试" +
+              runtime + "秒，共计" + to_string((stoi(runtime) + 5) * 15 * 3) +
+              "秒，约" + to_string((stoi(runtime) + 5) * 15 * 3 / 60 / 60) +
+              "小时\n进行中...\033[0m"
        << endl;
   // 文件/文件夹
   string DorF[] = {"filename", "directory"};
@@ -592,7 +601,8 @@ void fio_rand_write() {
                         " -group_reporting -ramp_time=5 -iodepth=" + iodepth +
                         " -" + dorf + "=" + dir + to_string(i);
               // 输出本次运行的命令以便排障
-              cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
+              cout << "\033[36;1m第" << i << "次运行的命令是：" << fio_cmd
+                   << "\033[0m" << endl;
               run_cmd(fio_cmd);
               format(i);
               // 重置数据
@@ -631,7 +641,8 @@ void fio_rand_write() {
                         " -group_reporting -ramp_time=5 -iodepth=" + iodepth +
                         " -" + dorf + "=" + dir + "dir_" + to_string(i) + "/";
               // 输出本次运行的命令以便排障
-              cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
+              cout << "\033[36;1m第" << i << "次运行的命令是：" << fio_cmd
+                   << "\033[0m" << endl;
               run_cmd(fio_cmd);
               format(i);
               // 重置数据
@@ -653,10 +664,10 @@ void fio_rand_write() {
 void fio_randrw() {
 
   // 文件
-  cout << "50%随机读写测试，共计15项，每项3次，每次" + runtime + "秒，共计" +
-              to_string((stoi(runtime) + 5) * 15 * 3) + "秒，约" +
+  cout << "\033[36;1m50%随机读写测试，共计15项，每项3次，每次" + runtime +
+              "秒，共计" + to_string((stoi(runtime) + 5) * 15 * 3) + "秒，约" +
               to_string((stoi(runtime) + 5) * 15 * 3 / 60 / 60) +
-              "小时\n进行中..."
+              "小时\n进行中...\033[0m"
        << endl;
   // 文件/文件夹
   string DorF[] = {"filename", "directory"};
@@ -688,7 +699,8 @@ void fio_randrw() {
                   " -group_reporting -ramp_time=5 -readrepeat=0 -iodepth=" +
                   iodepth + " -" + dorf + "=" + dir + "init_read.0.0";
               // 输出本次运行的命令以便排障
-              cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
+              cout << "\033[36;1m第" << i << "次运行的命令是：" << fio_cmd
+                   << "\033[0m" << endl;
               run_cmd(fio_cmd);
               format(i);
               // 重置数据
@@ -727,7 +739,8 @@ void fio_randrw() {
                   " -group_reporting -ramp_time=5 -readrepeat=0 -iodepth=" +
                   iodepth + " -" + dorf + "=" + dir;
               // 输出本次运行的命令以便排障
-              cout << "第" << i << "次运行的命令是：" << fio_cmd << endl;
+              cout << "\033[36;1m第" << i << "次运行的命令是：" << fio_cmd
+                   << "\033[0m" << endl;
               run_cmd(fio_cmd);
               format(i);
               // 重置数据

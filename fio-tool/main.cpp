@@ -60,11 +60,12 @@ int main() {
   int result = system("mkdir -p /var/log/fio_tool");
 
   if (result == 0) {
-    std::cout << "日志存储目录 /var/log/fio_tool 已成功创建。" << std::endl;
+    std::cout << "\033[32m日志存储目录 /var/log/fio_tool 已成功创建。\033[0m"
+              << std::endl;
   } else {
-    std::cerr
-        << "创建目录 /var/log/fio_tool 时出现错误。请检查当前用户的运行权限！"
-        << std::endl;
+    std::cerr << "\033[31m创建目录 /var/log/fio_tool "
+                 "时出现错误。请检查当前用户的运行权限！\033[0m"
+              << std::endl;
     return 0;
   }
 
@@ -78,38 +79,38 @@ int main() {
   // 创建日志文件流
   ofstream logFile(fileName, ios::app);
   if (!logFile) {
-    cerr << "无法创建日志文件！" << endl;
+    cerr << "\033[31m无法创建日志文件！\033[0m" << endl;
     return 1;
   } else {
-    cout << "成功创建日志文件：" << fileName << endl;
+    cout << "\033[32m成功创建日志文件：\033[0m" << fileName << endl;
   }
 
   // 重定向 cout 输出到日志文件和控制台
   TeeBuf teeBuf(cout.rdbuf(), logFile.rdbuf());
   streambuf *originalCoutBuf = cout.rdbuf(&teeBuf);
 
-  cout << "欢迎使用fio测试工具\n日志和输出的fio."
+  cout << "\033[36m欢迎使用fio测试工具\n日志和输出的fio."
           "csv默认保存到/var/log/fio_tool/"
           "\n日志不会自行清除，运行前请自行清理日志文件和检查是否残留有测试文件"
           "\n输出的数据统一为KiB/s单位，iops无单位\n请<按键>"
           "选择你的测试内容：\n"
        << "1. 顺序写测试\n"
        << "2. 随机写测试\n\n\n"
-       << "-------分割线-------\n"
+       << "\033[31m-------分割线-------\n"
        << "进行读测试之前需要先创建预读文件，固定为测试路径下的init_read.[0-15]"
        << ".0共16个文件\n"
        << "请自行根据测试情况判断是否需要重新生成，如需重新生成，请删除后按<r>"
        << "进行预读文件创建\n"
        << "如无需创建预读文件则直接按键开始测试即可！\n\n"
        << "测试完成后记得清理干净测试残留的文件和日志文件\n"
-       << "-------分割线-------\n\n\n"
+       << "-------分割线-------\033[36m\n\n\n"
        << "3. 顺序读测试\n"
        << "4. 随机读测试\n"
        << "5. 4k随机50%混合读写测试\n"
        << "r. 创建预读文件\n"
        << "f. Fullauto全自动测试"
        << "q. 退出程序\n"
-       << "s. 你想骚一下？" << endl;
+       << "s. 你想骚一下？\033[0m" << endl;
 
   char choice;
   while (true) {
@@ -159,7 +160,7 @@ int main() {
       }
       return 0;
     default:
-      cout << "无效选项，请重新输入。" << endl;
+      cout << "\033[31m无效选项，请重新输入。\033[0m" << endl;
     }
   }
 

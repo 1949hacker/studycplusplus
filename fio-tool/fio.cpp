@@ -494,7 +494,7 @@ void fio_rand_read() {
       string numjobs[] = {"1"}; // 用数组配置numjobs
       for (string numjob : numjobs) {
         // bs=512/1024
-        string bs_group[] = {"512", "1024"}; // 用数组配置bs块大小
+        string bs_group[] = {"4"}; // 用数组配置bs块大小
         for (string bs : bs_group) {
           string iodepth_group[] = {"1", "2", "8", "16",
                                     "32"}; // 用数组配置iodepth循环
@@ -533,7 +533,7 @@ void fio_rand_read() {
       string numjobs[] = {"8", "16"}; // 用数组配置numjobs
       for (string numjob : numjobs) {
         // bs=4k
-        string bs_group[] = {"128", "256", "512", "1024"}; // 用数组配置bs块大小
+        string bs_group[] = {"4"}; // 用数组配置bs块大小
         for (string bs : bs_group) {
           string iodepth_group[] = {"1", "2", "8", "16",
                                     "32"}; // 用数组配置iodepth循环

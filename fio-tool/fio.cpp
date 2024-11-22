@@ -374,7 +374,9 @@ void fio_seq_write() {
 
 // --- 顺序读start ---
 void fio_seq_read() {
-
+  // 重置数据
+  bw_int.clear();
+  iops_int.clear();
   // 文件
   cout << "\033[31;1m顺序读测试，共计50项，每项3次，每次预热5秒，每次测试" +
               runtime + "秒，共计" + to_string((stoi(runtime) + 5) * 50 * 3) +
@@ -404,14 +406,14 @@ void fio_seq_read() {
             // 重复运行3次
             for (int i = 1; i <= 3; i++) {
               // 构建文件夹fio命令
-              fio_cmd =
-                  "echo 3 > /proc/sys/vm/drop_caches && fio "
-                  "-name=init_read -size=" +
-                  fsize + "G -runtime=" + runtime + "s -time_base -bs=" + bs +
-                  "k -direct=" + direct + " -rw=" + rw +
-                  " -ioengine=" + ioengine + " -numjobs=" + numjob +
-                  " -group_reporting -ramp_time=5 -readrepeat=0 -iodepth=" +
-                  iodepth + " -" + dorf + "=" + dir + "init_read.0.0";
+              fio_cmd = "echo 3 > /proc/sys/vm/drop_caches && fio "
+                        "-name=init_read -size=" +
+                        fsize + "G -runtime=" + runtime +
+                        "s -time_base -bs=" + bs + "k -direct=" + direct +
+                        " -rw=" + rw + " -ioengine=" + ioengine +
+                        " -numjobs=" + numjob +
+                        " -group_reporting -ramp_time=5 -iodepth=" + iodepth +
+                        " -" + dorf + "=" + dir + "init_read.0.0";
               // 输出本次运行的命令以便排障
               cout << "\033[36;1m第" << i << "次运行的命令是：" << fio_cmd
                    << "\033[0m" << endl;
@@ -444,14 +446,14 @@ void fio_seq_read() {
                    "_iodepth=" + iodepth + "_bs=" + bs + "k";
             for (int i = 1; i <= 3; i++) {
               // 构建文件夹fio命令
-              fio_cmd =
-                  "echo 3 > /proc/sys/vm/drop_caches && fio "
-                  "-name=init_read -size=" +
-                  fsize + "G -runtime=" + runtime + "s -time_base -bs=" + bs +
-                  "k -direct=" + direct + " -rw=" + rw +
-                  " -ioengine=" + ioengine + " -numjobs=" + numjob +
-                  " -group_reporting -ramp_time=5 -readrepeat=0 -iodepth=" +
-                  iodepth + " -" + dorf + "=" + dir;
+              fio_cmd = "echo 3 > /proc/sys/vm/drop_caches && fio "
+                        "-name=init_read -size=" +
+                        fsize + "G -runtime=" + runtime +
+                        "s -time_base -bs=" + bs + "k -direct=" + direct +
+                        " -rw=" + rw + " -ioengine=" + ioengine +
+                        " -numjobs=" + numjob +
+                        " -group_reporting -ramp_time=5 -iodepth=" + iodepth +
+                        " -" + dorf + "=" + dir;
               // 输出本次运行的命令以便排障
               cout << "\033[36;1m第" << i << "次运行的命令是：" << fio_cmd
                    << "\033[0m" << endl;
@@ -473,6 +475,9 @@ void fio_seq_read() {
 
 // --- 随机读start ---
 void fio_rand_read() {
+  // 重置数据
+  bw_int.clear();
+  iops_int.clear();
   // 文件
   cout << "\033[31;1m随机读测试，共计15项，每项3次，每次预热5秒，每次测试" +
               runtime + "秒，共计" + to_string((stoi(runtime) + 5) * 15 * 3) +
@@ -570,6 +575,9 @@ void fio_rand_read() {
 
 // --- 随机写开始 ---
 void fio_rand_write() {
+  // 重置数据
+  bw_int.clear();
+  iops_int.clear();
   cout << "\033[31;1m随机写测试，共计15项，每项3次，每次预热5秒，每次测试" +
               runtime + "秒，共计" + to_string((stoi(runtime) + 5) * 15 * 3) +
               "秒，约 "
@@ -665,7 +673,9 @@ void fio_rand_write() {
 
 // --- 4k随机读写开始 ---
 void fio_randrw() {
-
+  // 重置数据
+  bw_int.clear();
+  iops_int.clear();
   // 文件
   cout << "\033[31;1m50%随机读写测试，共计15项，每项3次，每次" + runtime +
               "秒，共计" + to_string((stoi(runtime) + 5) * 15 * 3) + "秒，约"
@@ -693,14 +703,14 @@ void fio_randrw() {
                    "_iodepth=" + iodepth + "_bs=" + bs + "k";
             for (int i = 1; i <= 3; i++) {
               // 构建文件夹fio命令
-              fio_cmd =
-                  "echo 3 > /proc/sys/vm/drop_caches && fio "
-                  "-name=init_read -size=" +
-                  fsize + "G -runtime=" + runtime + "s -time_base -bs=" + bs +
-                  "k -direct=" + direct + " -rw=" + rw +
-                  " -ioengine=" + ioengine + " -numjobs=" + numjob +
-                  " -group_reporting -ramp_time=5 -readrepeat=0 -iodepth=" +
-                  iodepth + " -" + dorf + "=" + dir + "init_read.0.0";
+              fio_cmd = "echo 3 > /proc/sys/vm/drop_caches && fio "
+                        "-name=init_read -size=" +
+                        fsize + "G -runtime=" + runtime +
+                        "s -time_base -bs=" + bs + "k -direct=" + direct +
+                        " -rw=" + rw + " -ioengine=" + ioengine +
+                        " -numjobs=" + numjob +
+                        " -group_reporting -ramp_time=5 -iodepth=" + iodepth +
+                        " -" + dorf + "=" + dir + "init_read.0.0";
               // 输出本次运行的命令以便排障
               cout << "\033[36;1m第" << i << "次运行的命令是：" << fio_cmd
                    << "\033[0m" << endl;
@@ -733,14 +743,14 @@ void fio_randrw() {
                    "_iodepth=" + iodepth + "_bs=" + bs + "k";
             for (int i = 1; i <= 3; i++) {
               // 构建文件夹fio命令
-              fio_cmd =
-                  "echo 3 > /proc/sys/vm/drop_caches && fio "
-                  "-name=init_read -size=" +
-                  fsize + "G -runtime=" + runtime + "s -time_base -bs=" + bs +
-                  "k -direct=" + direct + " -rw=" + rw +
-                  " -ioengine=" + ioengine + " -numjobs=" + numjob +
-                  " -group_reporting -ramp_time=5 -readrepeat=0 -iodepth=" +
-                  iodepth + " -" + dorf + "=" + dir;
+              fio_cmd = "echo 3 > /proc/sys/vm/drop_caches && fio "
+                        "-name=init_read -size=" +
+                        fsize + "G -runtime=" + runtime +
+                        "s -time_base -bs=" + bs + "k -direct=" + direct +
+                        " -rw=" + rw + " -ioengine=" + ioengine +
+                        " -numjobs=" + numjob +
+                        " -group_reporting -ramp_time=5 -iodepth=" + iodepth +
+                        " -" + dorf + "=" + dir;
               // 输出本次运行的命令以便排障
               cout << "\033[36;1m第" << i << "次运行的命令是：" << fio_cmd
                    << "\033[0m" << endl;

@@ -706,7 +706,7 @@ void fio_randrw() {
               fio_cmd = "echo 3 > /proc/sys/vm/drop_caches && fio "
                         "-name=init_read -size=" +
                         fsize + "G -runtime=" + runtime +
-                        "s -time_base -bs=" + bs + "k -direct=" + direct +
+                        "s -time_base -rwmixwrite=30 -bs=" + bs + "k -direct=" + direct +
                         " -rw=" + rw + " -ioengine=" + ioengine +
                         " -numjobs=" + numjob +
                         " -group_reporting -ramp_time=5 -iodepth=" + iodepth +
@@ -746,7 +746,7 @@ void fio_randrw() {
               fio_cmd = "echo 3 > /proc/sys/vm/drop_caches && fio "
                         "-name=init_read -size=" +
                         fsize + "G -runtime=" + runtime +
-                        "s -time_base -bs=" + bs + "k -direct=" + direct +
+                        "s -time_base -rwmixwrite=30 -bs=" + bs + "k -direct=" + direct +
                         " -rw=" + rw + " -ioengine=" + ioengine +
                         " -numjobs=" + numjob +
                         " -group_reporting -ramp_time=5 -iodepth=" + iodepth +
